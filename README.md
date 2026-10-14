@@ -48,7 +48,7 @@
 
 [![点击播放功能演示视频](docs/media/video-cover.png)](https://woxicaocao.github.io/screenshot-clothesline/showcase/#demo)
 
-[观看 / 下载完整演示视频](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/%E6%88%AA%E5%9B%BE%E6%99%BE%E8%A1%A3%E6%9E%B6%E5%8A%9F%E8%83%BD%E6%BC%94%E7%A4%BA_0.8.6OK.mp4) · 横屏 16:9 · 使用实际操作录屏与配音
+[观看 / 下载完整演示视频](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4) · 横屏 16:9 · 使用实际操作录屏与配音
 
 ## 网页素材，复制就能挂
 

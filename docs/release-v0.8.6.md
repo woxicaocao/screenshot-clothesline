@@ -26,8 +26,8 @@
 
 ## 观看演示
 
-[观看 / 下载完整视频「截图晾衣架功能演示_0.8.6OK.mp4」](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/%E6%88%AA%E5%9B%BE%E6%99%BE%E8%A1%A3%E6%9E%B6%E5%8A%9F%E8%83%BD%E6%BC%94%E7%A4%BA_0.8.6OK.mp4)，横屏 16:9，约 49 秒。`demo-preview.mp4` 是同内容、同配音的较小播放副本；完整原视频保留不变。
+[观看 / 下载完整视频「截图晾衣架功能演示_0.8.6OK.mp4」](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4)，横屏 16:9，约 49 秒。`demo-preview.mp4` 是同内容、同配音的较小播放副本；完整原视频保留不变。
 
 原图、便签和设置保存在 `%APPDATA%\screenshot-clothesline`。升级时先退出旧版，保留该数据目录即可继续使用。
 
-源码采用 MIT 许可证。下载附件包含 `使用说明.md`、`LICENSE-MIT.txt` 和 `SHA256SUMS.txt`；校验文件用于核对下载完整性。详细功能与常见问题见[项目介绍](https://github.com/woxicaocao/screenshot-clothesline)，问题反馈请[提交 Issue](https://github.com/woxicaocao/screenshot-clothesline/issues)。
+源码采用 MIT 许可证。下载附件包含 `USER-GUIDE.md`（使用说明）、`LICENSE-MIT.txt` 和 `SHA256SUMS.txt`；校验文件用于核对下载完整性。详细功能与常见问题见[项目介绍](https://github.com/woxicaocao/screenshot-clothesline)，问题反馈请[提交 Issue](https://github.com/woxicaocao/screenshot-clothesline/issues)。
