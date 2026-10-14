@@ -13,6 +13,8 @@ const { AutoHideController } = require('./lib/auto-hide.cjs');
 const { HoverPasteController } = require('./lib/hover-paste.cjs');
 const { rackSizeForDisplay } = require('./lib/window-size.cjs');
 const { inspectEncodedImage, mimeForFile } = require('./lib/image-format.cjs');
+const { LocalImageImporter, MAX_LOCAL_FILES } = require('./lib/local-image-import.cjs');
+const { RendererImageDecoder } = require('./lib/renderer-image-decoder.cjs');
 
 app.setName('screenshot-clothesline');
 // 静态图片挂件使用软件合成，降低常驻GPU资源；特殊显卡可用此开关恢复。
@@ -76,6 +78,12 @@ let deleteCleanupBusy = false;
 let hoverPasteController;
 let manualPastePromise = null;
 let pasteHover = false;
+let localImageImporter;
+let localWebpDecoder;
+let localImportPromise = null;
+let fileDropActive = false;
+let fileDropDeadline = 0;
+const FILE_DROP_IDLE_TIMEOUT = 2500;
 
 function suspendRack(reason, active) {
   if (active) suspensionReasons.add(reason);
@@ -183,6 +191,52 @@ function pasteClipboard() {
   return manualPastePromise;
 }
 
+function setFileDropActive(active) {
+  // 外部拖入仅在衣架显示时接管透明区域；衣架拖出原图不得被反向接管。
+  if (active && (quitting || preparingExit || nativeDragging || !rackWindow?.isVisible()
+    || autoHideState().manuallyHidden)) return;
+  fileDropDeadline = active ? Date.now() + FILE_DROP_IDLE_TIMEOUT : 0;
+  if (fileDropActive === active) return;
+  fileDropActive = active;
+  suspendRack('local-file-drop', active);
+  applyInteractive(requestedInteractive);
+  publish();
+}
+
+function importLocalImages(filePaths) {
+  const unavailable = message => ({ added: 0, duplicates: 0, failed: 0, total: 0, errors: [], unavailable: true, message });
+  if (quitting || preparingExit || !localImageImporter) return Promise.resolve(unavailable('程序正在退出，请稍后重试。'));
+  if (localImportPromise) return Promise.resolve(unavailable('正在挂上上一批图片，请稍后再拖入。'));
+  setFileDropActive(false);
+  if (!Array.isArray(filePaths) || filePaths.length === 0 || filePaths.length > MAX_LOCAL_FILES
+    || filePaths.some(filePath => typeof filePath !== 'string' || !filePath || filePath.length > 32767)) {
+    status = { level: 'error', message: '请从本机文件夹拖入 1 至 100 张图片，一次最多 100 张。' };
+    publish();
+    return Promise.resolve({ added: 0, duplicates: 0, failed: 0, total: 0, errors: [], error: true, message: status.message });
+  }
+  suspendRack('local-file-import', true);
+  localImportPromise = enqueueStateChange(async () => {
+    status = { level: 'info', message: '正在挂上本机图片…' };
+    publish();
+    try {
+      const result = await localImageImporter.importFiles(filePaths);
+      status = { level: result.failed ? 'error' : 'info', message: result.message };
+      publish();
+      return result;
+    } catch (error) {
+      status = { level: 'error', message: error.message || '本机图片未能添加，请重新拖入重试。' };
+      publish();
+      return { added: 0, duplicates: 0, failed: 0, total: 0, errors: [], error: true, message: status.message };
+    }
+  }).finally(() => {
+    localImportPromise = null;
+    suspendRack('local-file-import', false);
+    applyInteractive(requestedInteractive);
+    publish();
+  });
+  return localImportPromise;
+}
+
 function snapshot() {
   const settings = repository.getSettings();
   const photos = repository.getPhotos().map(publicPhoto);
@@ -190,7 +244,7 @@ function snapshot() {
     photos,
     items: [...photos, ...(notesRepository?.getNoteSummaries() || []).map(publicNote)]
       .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt) || a.id.localeCompare(b.id)),
-    state: { paused: settings.paused, alwaysOnTop: settings.alwaysOnTop, autoHide: settings.autoHide, autoHideSpeed: settings.autoHideSpeed, autoHidden: autoHideState().collapsed, manuallyHidden: autoHideState().manuallyHidden, dragging: !!dragSession, externalDragging: nativeDragging, pasteShortcutAvailable: !!hoverPasteController?.getState().registered, pasteShortcutBlocked: !!hoverPasteController?.getState().failed },
+    state: { paused: settings.paused, alwaysOnTop: settings.alwaysOnTop, autoHide: settings.autoHide, autoHideSpeed: settings.autoHideSpeed, autoHidden: autoHideState().collapsed, manuallyHidden: autoHideState().manuallyHidden, dragging: !!dragSession, externalDragging: nativeDragging, importing: !!localImportPromise, fileDropActive, pasteShortcutAvailable: !!hoverPasteController?.getState().registered, pasteShortcutBlocked: !!hoverPasteController?.getState().failed },
     status,
     version: app.getVersion()
   };
@@ -210,7 +264,7 @@ function reportError(error) {
 function applyInteractive(interactive) {
   if (!rackWindow || rackWindow.isDestroyed()) return;
   requestedInteractive = interactive;
-  const nextIgnoring = !(interactive || dragSession);
+  const nextIgnoring = !(interactive || dragSession || fileDropActive);
   if (nextIgnoring === ignoringMouseEvents) return;
   ignoringMouseEvents = nextIgnoring;
   rackWindow.setIgnoreMouseEvents(nextIgnoring, { forward: true });
@@ -261,6 +315,7 @@ function restoreRack() {
 }
 
 function hideRack() {
+  setFileDropActive(false);
   endDrag();
   autoHideController?.setManuallyHidden(true);
   rackWindow.hide();
@@ -688,6 +743,13 @@ function registerIPC() {
   const requireRack = (event) => { if (!fromRack(event)) throw new Error('不允许的窗口请求。'); };
   ipcMain.handle('rack:get-snapshot', (event) => { requireRack(event); return snapshot(); });
   ipcMain.handle('rack:paste-clipboard', event => { requireRack(event); return pasteClipboard(); });
+  ipcMain.handle('rack:import-local-images', (event, filePaths) => { requireRack(event); return importLocalImages(filePaths); });
+  ipcMain.on('rack:decoded-local-webp', (event, payload) => {
+    if (fromRack(event)) localWebpDecoder?.accept(event, payload);
+  });
+  ipcMain.on('rack:set-file-drop-active', (event, active) => {
+    if (fromRack(event) && typeof active === 'boolean') setFileDropActive(active);
+  });
   ipcMain.handle('rack:open-appreciation', event => { requireRack(event); return openAppreciation(); });
   ipcMain.handle('rack:close-appreciation', event => {
     const current = appreciationWindow;
@@ -810,6 +872,9 @@ async function launch() {
   });
   repository = new PhotoRepository(app.getPath('userData'));
   await repository.init();
+  localWebpDecoder = new RendererImageDecoder({ getWindow: () => rackWindow, nativeImage });
+  localImageImporter = new LocalImageImporter({ nativeImage, repository, onPhoto: publish,
+    decodeWebp: (bytes, header) => localWebpDecoder.decode(bytes, header) });
   notesRepository = new NotesRepository(app.getPath('userData'));
   await notesRepository.init();
   const systemReadImage = createClipboardReader(clipboard, nativeImage);
@@ -867,13 +932,15 @@ async function launch() {
   secureWindow(rackWindow);
   rackWindow.on('move', queuePositionSave);
   rackWindow.on('resize', queuePositionSave);
-  rackWindow.on('hide', () => { pasteHover = false; updateHoverPaste(); });
+  rackWindow.on('hide', () => { setFileDropActive(false); pasteHover = false; updateHoverPaste(); });
   rackWindow.on('blur', () => { pasteHover = false; updateHoverPaste(); });
   rackWindow.on('close', (event) => { if (!quitting) { event.preventDefault(); hideRack(); } });
   rackWindow.once('ready-to-show', () => {
     applyInteractive(false); rackWindow.showInactive();
     autoHideTimer = setInterval(() => {
       if (quitting || rackWindow.isDestroyed()) return;
+      // 与已有轻量轮询复用；拖放中取消、失焦或漏发 dragleave 时自动恢复。
+      if (fileDropActive && Date.now() >= fileDropDeadline) setFileDropActive(false);
       autoHideController.tick(testCursorPoint || screen.getCursorScreenPoint());
       updateHoverPaste();
     }, 50);
@@ -907,6 +974,10 @@ async function launch() {
         const remove = notesRepository.deleteNote.bind(notesRepository);
         notesRepository.deleteNote = id => { notesRepository.deleteNote = remove; return Promise.reject(new Error('测试：便签删除失败')); };
       },
+      failNextLocalImageSave: () => {
+        const save = repository.savePhoto.bind(repository);
+        repository.savePhoto = image => { repository.savePhoto = save; return Promise.reject(new Error('测试：本机图片保存失败')); };
+      },
       noteMenu: () => lastNoteMenu ? { id: lastNoteMenuId, labels: lastNoteMenu.items.map(item => item.label) } : null,
       chooseNoteMenu: label => {
         const item = lastNoteMenu?.items.find(entry => entry.label === label);
@@ -915,7 +986,7 @@ async function launch() {
       },
       deleteNote,
       restore: restoreRack,
-      runtime: () => ({ visible: rackWindow.isVisible(), alwaysOnTop: rackWindow.isAlwaysOnTop(), ignoringMouseEvents, bounds: rackWindow.getBounds(), expandedBounds, autoHide: autoHideState(), displayBounds: screen.getDisplayMatching(expandedBounds).bounds, imagePreviews: [...previewWindows.entries()].filter(([, window]) => !window.isDestroyed()).map(([id, window]) => ({ id, visible: window.isVisible(), alwaysOnTop: window.isAlwaysOnTop(), bounds: window.getBounds() })), floating: [...floatingWindows.entries()].filter(([, window]) => !window.isDestroyed()).map(([id, window]) => ({ id, visible: window.isVisible(), alwaysOnTop: window.isAlwaysOnTop(), bounds: window.getBounds() })), nativeDragging, preparedDragCount: preparedDrags.size, hardwareAcceleration: app.isHardwareAccelerationEnabled(), lastNativeDrag, lastPhotoMenu: lastPhotoMenu ? { id: lastPhotoMenuId, labels: lastPhotoMenu.items.map((item) => item.label) } : null, trayCreated: !!tray, dataDir: app.getPath('userData') }),
+      runtime: () => ({ visible: rackWindow.isVisible(), alwaysOnTop: rackWindow.isAlwaysOnTop(), ignoringMouseEvents, fileDropActive, importing: !!localImportPromise, bounds: rackWindow.getBounds(), expandedBounds, autoHide: autoHideState(), displayBounds: screen.getDisplayMatching(expandedBounds).bounds, imagePreviews: [...previewWindows.entries()].filter(([, window]) => !window.isDestroyed()).map(([id, window]) => ({ id, visible: window.isVisible(), alwaysOnTop: window.isAlwaysOnTop(), bounds: window.getBounds() })), floating: [...floatingWindows.entries()].filter(([, window]) => !window.isDestroyed()).map(([id, window]) => ({ id, visible: window.isVisible(), alwaysOnTop: window.isAlwaysOnTop(), bounds: window.getBounds() })), nativeDragging, preparedDragCount: preparedDrags.size, hardwareAcceleration: app.isHardwareAccelerationEnabled(), lastNativeDrag, lastPhotoMenu: lastPhotoMenu ? { id: lastPhotoMenuId, labels: lastPhotoMenu.items.map((item) => item.label) } : null, trayCreated: !!tray, dataDir: app.getPath('userData') }),
       workArea: () => screen.getDisplayMatching(expandedBounds).workArea,
       physicalWindow: () => {
         const bounds = rackWindow.getBounds();
@@ -984,6 +1055,7 @@ if (!app.requestSingleInstanceLock()) {
         return;
       }
       quitting = true;
+      setFileDropActive(false);
       clearTimeout(moveTimer);
       clearInterval(autoHideTimer);
       clearInterval(deleteCleanupTimer);

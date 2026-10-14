@@ -1,10 +1,57 @@
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
+
+// 仅响应主进程的单张解码请求；不提供页面可调用的文件或任意图片解码接口。
+ipcRenderer.on('rack:decode-local-webp', async (_event, payload) => {
+  let bitmap, canvas;
+  const requestId = payload?.requestId;
+  if (typeof requestId !== 'string') return;
+  try {
+    const { width, height, bytes } = payload;
+    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0
+      || width * height > 40_000_000 || !(bytes instanceof Uint8Array) || !bytes.byteLength
+      || bytes.byteLength > 40 * 1024 * 1024) throw new Error('invalid WebP request');
+    bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/webp' }));
+    if (!(bitmap.width === width && bitmap.height === height || bitmap.width === height && bitmap.height === width)) {
+      throw new Error('invalid decoded dimensions');
+    }
+    canvas = document.createElement('canvas');
+    canvas.width = bitmap.width; canvas.height = bitmap.height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('canvas unavailable');
+    context.drawImage(bitmap, 0, 0);
+    bitmap.close(); bitmap = null;
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob || blob.size > 128 * 1024 * 1024) throw new Error('decoded image too large');
+    const png = new Uint8Array(await blob.arrayBuffer());
+    ipcRenderer.send('rack:decoded-local-webp', { requestId, bytes: png });
+  } catch {
+    ipcRenderer.send('rack:decoded-local-webp', { requestId, error: true });
+  } finally {
+    bitmap?.close();
+    if (canvas) { canvas.width = canvas.height = 0; }
+  }
+});
+
+async function importLocalImages(files) {
+  if (!Array.isArray(files) || files.length === 0) throw new Error('请从文件夹拖入本机图片。');
+  if (files.length > 100) throw new Error('一次最多拖入 100 张图片，请分批添加。');
+  const paths = files.map(file => {
+    let filePath;
+    try { filePath = webUtils.getPathForFile(file); }
+    catch { throw new Error('无法读取拖入的图片，请从本机文件夹重新拖入。'); }
+    if (!filePath) throw new Error('请从本机文件夹拖入图片；网页图片请复制后粘贴。');
+    return filePath;
+  });
+  return ipcRenderer.invoke('rack:import-local-images', paths);
+}
 
 contextBridge.exposeInMainWorld('rack', {
   getSnapshot: () => ipcRenderer.invoke('rack:get-snapshot'),
   pasteClipboard: () => ipcRenderer.invoke('rack:paste-clipboard'),
+  importLocalImages,
+  setFileDropActive: (active) => ipcRenderer.send('rack:set-file-drop-active', active === true),
   addNote: () => ipcRenderer.invoke('rack:add-note'),
   openAppreciation: () => ipcRenderer.invoke('rack:open-appreciation'),
   openNote: (id) => ipcRenderer.invoke('rack:open-note', id),

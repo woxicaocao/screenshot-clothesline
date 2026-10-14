@@ -12,10 +12,10 @@ const { spawn } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
 const options = {
-  executable: path.join(root, 'release', 'v0.8.6', 'win-unpacked', '截图晾衣架.exe'),
+  executable: path.join(root, 'release', `v${require('../package.json').version}`, 'win-unpacked', '截图晾衣架.exe'),
   source: true, onlyIdle: false, onlyNotes: false, label: 'optimized', args: [], idleMs: 20000, settleMs: 8000,
   sampleCount: 3, intervalMs: 1000, largeWidth: 2560, largeHeight: 1440,
-  reportDir: path.join(root, 'test-artifacts', 'v0.8.6'),
+  reportDir: path.join(root, 'test-artifacts', `v${require('../package.json').version}`),
 };
 
 function parseOptions() {

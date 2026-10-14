@@ -7,7 +7,7 @@ const crypto = require('node:crypto');
 
 const root = path.resolve(__dirname, '..');
 const mode = process.env.RACK_EXE ? 'packaged' : 'development';
-const artifacts = path.join(root, 'test-artifacts', 'v0.8.6', `appreciation-${mode}`);
+const artifacts = path.join(root, 'test-artifacts', `v${require('../package.json').version}`, `appreciation-${mode}`);
 const profile = path.join(artifacts, 'profiles', new Date().toISOString().replace(/[:.]/g, '-'));
 const report = { mode, profile, date: new Date().toISOString(), tests: [], pageErrors: [],
   qrSource: 'user supplied PNG, unchanged bytes', actualScan: 'not performed; no payment initiated', clipboard: 'isolated application; daily clipboard unchanged' };
@@ -32,6 +32,9 @@ async function close(page, action) {
   try { await action(); }
   catch (error) { if (!page.isClosed()) throw error; }
   await pending;
+  // 渲染目标先关闭，随后 BrowserWindow 才完成销毁；等待真实窗口状态。
+  const deadline = Date.now() + 3000;
+  while (await count() !== 1 && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 30));
   assert.equal(await count(), 1);
 }
 async function run() {

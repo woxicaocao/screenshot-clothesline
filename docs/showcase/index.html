@@ -16,7 +16,7 @@
         <svg class="brand-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 13c8 4 22 4 30 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m10 16 2 15 15-2-2-15" fill="#f6f0df" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m17 8 2 13" stroke="#bb895e" stroke-width="5" stroke-linecap="round"/><path d="m16 10 2 10" stroke="#e5c7a3" stroke-width="2" stroke-linecap="round"/><path d="m15 26 3-4 4 2 2-3" stroke="#7e9680" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>截图晾衣架</span>
       </a>
-      <span class="preview-label"><span aria-hidden="true"></span>Windows 桌面工具 · v0.8.6</span>
+      <span class="preview-label"><span aria-hidden="true"></span>Windows 桌面工具 · v0.8.7</span>
     </header>
 
     <main id="main">
@@ -26,10 +26,10 @@
         <p class="hero-description">自动挂图、悬浮对照、彩色便签，<br class="desktop-break">让需要的内容随时看得见。</p>
         <div class="badges" aria-label="支持平台和版本">
           <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m1 3 6-1v5H1Zm7-1 7-1v6H8ZM1 8h6v5l-6-1Zm7 0h7v6l-7-1Z" fill="currentColor"/></svg>Windows 10 / 11 · x64</span>
-          <span>v0.8.6</span><span>MIT 开源</span>
+          <span>v0.8.7</span><span>MIT 开源</span>
         </div>
         <nav class="hero-actions" aria-label="主要入口">
-          <a class="button button-primary" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>下载免安装版<span class="button-note">Windows ZIP</span></a>
+          <a class="button button-primary" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>下载免安装版<span class="button-note">Windows ZIP</span></a>
           <a class="button button-secondary" href="#demo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 8 5-8 5Z"/></svg>观看演示</a>
           <a class="text-link" href="#start">快速上手<span aria-hidden="true">↗</span></a>
         </nav>
@@ -88,7 +88,7 @@
           <p>当前目录没有播放副本，或浏览器无法读取视频。也可以通过 GitHub 下载完整演示视频观看。</p>
           <div><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/demo-preview.mp4" target="_blank" rel="noreferrer">下载播放副本</a><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4" target="_blank" rel="noreferrer">下载完整原片</a><span>GitHub 下载入口待发布</span></div>
         </div>
-        <p class="video-caption"><span>截图晾衣架功能演示_0.8.6OK.mp4</span><span>详情播放副本 · 原内容与配音保留</span></p>
+        <p class="video-caption"><span>截图晾衣架功能演示_0.8.6OK.mp4</span><span>0.8.6 功能演示 · 原内容与配音保留</span></p>
       </section>
 
       <section class="section features-section" aria-labelledby="features-title">
@@ -98,6 +98,10 @@
           <p>看参考、存素材、记待办。把原本散落在窗口里的内容，挂到一个随时能看见的地方。</p>
         </div>
         <div class="feature-grid">
+          <article class="feature-card">
+            <figure><img src="../media/local-images.png" width="1024" height="260" alt="从文件夹拖入多张本机图片，保存副本挂到晾衣架。" loading="lazy" style="object-fit:contain;background:#f8f5ed"></figure>
+            <div class="feature-body"><span class="feature-category">0.8.7 新增 · 本机图片</span><h3>本机图片，拖进来就挂。</h3><p>从文件夹选中一张或多张图片，拖到展开的晾衣架上，松开即可添加。</p><p class="feature-detail">支持 PNG、JPG/JPEG、WebP。暂停时也能拖入；保留原文件，预览与拖出使用原图。</p></div>
+          </article>
           <article class="feature-card">
             <figure><img src="../media/paste.png" width="1200" height="750" alt="复制网页图片后，把鼠标移到晾衣架，按 Ctrl+V 添加图片。" loading="lazy"></figure>
             <div class="feature-body"><span class="feature-category">收集素材</span><h3>网页素材，复制就能挂。</h3><p>右键选择「复制图片」，把鼠标移到晾衣架，按 <kbd>Ctrl</kbd> + <kbd>V</kbd>。</p><p class="feature-detail">自动捕捉开启时，图片可能提前挂上；暂停后也能手动粘贴。</p></div>
@@ -132,12 +136,13 @@
           <li><span class="step-index">02</span><h3>双击运行</h3><p>打开「截图晾衣架.exe」。已有旧版在运行时，先从托盘退出旧版。</p></li>
           <li><span class="step-index">03</span><h3>截一张新图</h3><p>用 <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> 或微信截图，让新图片进入剪贴板。</p></li>
         </ol>
-        <div class="start-bottom"><span>首次运行会跳过剪贴板已有图片，请新截一张试试。</span><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip">下载免安装版 <span aria-hidden="true">↓</span></a></div>
+        <div class="start-bottom"><span>首次运行会跳过剪贴板已有图片，请新截一张试试。</span><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip">下载免安装版 <span aria-hidden="true">↓</span></a></div>
       </section>
 
       <section class="section support-section" aria-labelledby="support-title">
         <div class="section-heading"><span class="chapter">05 / 使用小贴士</span><h2 id="support-title">你可能还想知道。</h2></div>
         <div class="faq-list">
+          <details><summary>怎样把电脑里的图片挂上去？</summary><div class="faq-content"><p>从文件夹选中 PNG、JPG/JPEG 或 WebP 图片，拖到展开衣架的工具栏、绳子或卡片区域。可以多选，暂停时也能导入。保存的是独立副本，来源文件保留不变。</p></div></details>
           <details open><summary>「暂停」为什么不叫「自动捕捉」？</summary><div class="faq-content"><p>这个按钮显示的是<strong>你下一步能做的操作</strong>：显示「暂停」说明正在自动捕捉；显示「继续」说明已经暂停。截图仍使用你熟悉的 Windows、微信等工具。</p></div></details>
           <details><summary>复制网页图片，为什么按 Ctrl+V 前就挂上了？</summary><div class="faq-content"><p>自动捕捉会收集剪贴板中的新图片，所以复制后可能自动挂上。想手动添加，先点「暂停」，然后悬停衣架按 Ctrl+V 或点击「粘贴」。请选「复制图片」，复制图片地址、文字或文件路径不能直接挂图。</p></div></details>
           <details><summary>原图和便签保存在哪里？</summary><div class="faq-content"><p>只保存在本机，不上传云端。应用数据目录是 <code>%APPDATA%\screenshot-clothesline</code>，原图在其 <code>photos</code> 子目录，目录中也保存缩略图、便签记录和设置。重启后继续保留。</p><p>在 Windows 资源管理器地址栏输入上面的路径即可打开。关闭预览不删图片；右键「删除」会永久移除对应内容及缓存。</p></div></details>
@@ -160,7 +165,7 @@ npm run dist</code></pre>
         <details class="appreciation"><summary>赞赏<span>如果它帮到了你，可以请作者喝杯茶。</span><span class="details-plus" aria-hidden="true">+</span></summary><div class="appreciation-content"><img src="../media/appreciation-qr.png" width="280" height="280" alt="作者提供的赞赏收款二维码，请使用相应支付应用扫描，并确认收款信息。" loading="lazy"><p>感谢你的支持。赞赏自愿，所有功能照常使用。</p></div></details>
       </section>
     </main>
-    <footer class="footer"><span>截图晾衣架 · 随手挂，随时看。</span><span>Windows · v0.8.6 · MIT</span></footer>
+    <footer class="footer"><span>截图晾衣架 · 随手挂，随时看。</span><span>Windows · v0.8.7 · MIT</span></footer>
   </div>
   <script>
     (() => {

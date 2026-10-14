@@ -9,12 +9,12 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011%20x64-647B67?style=flat-square" alt="支持 Windows 10 / 11 x64">
-  <img src="https://img.shields.io/badge/version-0.8.6-B58A60?style=flat-square" alt="版本 0.8.6">
+  <img src="https://img.shields.io/badge/version-0.8.7-B58A60?style=flat-square" alt="版本 0.8.7">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-647B67?style=flat-square" alt="MIT 许可证"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip"><strong>下载免安装版</strong></a>
+  <a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip"><strong>下载免安装版</strong></a>
   · <a href="https://woxicaocao.github.io/screenshot-clothesline/showcase/#demo">观看演示</a>
   · <a href="#三步上手">快速上手</a>
 </p>
@@ -49,6 +49,14 @@
 [![点击播放功能演示视频](docs/media/video-cover.png)](https://woxicaocao.github.io/screenshot-clothesline/showcase/#demo)
 
 [观看 / 下载完整演示视频](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4) · 横屏 16:9 · 使用实际操作录屏与配音
+
+## 本机图片，拖进来就挂
+
+从资源管理器选中图片，拖到展开的晾衣架上的工具栏、绳子或卡片区域，松开即可添加。可以一次拖入多张 **PNG、JPG/JPEG、WebP** 图片；自动捕捉暂停时也能使用。
+
+![从文件夹拖入本机图片，保存副本并挂到晾衣架](docs/media/local-images.png)
+
+导入保存独立副本，文件夹里的原文件保留。衣架显示小缩略图，预览和拖出使用原图，保留导入文件的编码、尺寸与内容。重复图片只保留一张；不支持的格式或保存失败会提示，可修正后重新拖入。
 
 ## 网页素材，复制就能挂
 
@@ -104,13 +112,20 @@
 
 ## 三步上手
 
-1. **下载并完整解压** [Windows x64 免安装 ZIP](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip)。
+1. **下载并完整解压** [Windows x64 免安装 ZIP](https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip)。
 2. **双击「截图晾衣架.exe」**。无需安装 Node.js，程序旁边的文件请一起保留；如果旧版仍在运行，先从托盘退出旧版。
-3. **照常截图，开始挂图**。也可以复制网页图片后手动粘贴，或点「添加便签」记录想法。
+3. **照常截图，开始挂图**。也可以从文件夹拖入本机图片、复制网页图片后手动粘贴，或点「添加便签」记录想法。
 
 晾衣架可以拖动，宽度约为当前屏幕的 40%，支持横向翻看旧图片和便签。默认不置顶、自动隐藏默认关闭；按自己的习惯开启即可。
 
 ## 常见问题
+
+<details>
+<summary><strong>本机图片怎样添加？会移动或删除原文件吗？</strong></summary>
+
+先展开衣架，从文件夹选中静态 PNG、JPG/JPEG 或 WebP 图片，拖到工具栏、绳子或卡片区域后松开。可多选；导入只保存副本，不修改、移动或删除来源文件。GIF、BMP、SVG、动态 PNG/WebP、文件夹和网页链接暂不支持直接拖入，请转换为支持的静态格式。
+
+</details>
 
 <details>
 <summary><strong>截图后没有挂上，先检查哪里？</strong></summary>

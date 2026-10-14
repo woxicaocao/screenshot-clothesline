@@ -7,7 +7,7 @@ const path = require('node:path');
 const { nativePhotoDrag, nativeCursor } = require('./native-photo-drag.cjs');
 
 const root = path.resolve(__dirname, '..');
-const artifacts = path.join(root, 'test-artifacts', 'v0.8.6');
+const artifacts = path.join(root, 'test-artifacts', `v${require('../package.json').version}`);
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
 const profile = path.join(artifacts, 'profiles', runId);
 const verification = { date: new Date().toISOString(), mode: process.env.RACK_EXE ? 'packaged' : 'development', clipboard: 'isolated mock; real clipboard read only', nativeDrag: 'isolated PNG payload stub; Windows OLE drag/drop not exercised', tests: [], manualChecks: ['微信实际截图', '微信等聊天软件的真实拖入和发送未自动实测', '资源管理器文件夹真实拖入保存未自动实测', '悬浮窗跨应用置顶', '桌面背景点击穿透', 'Windows 系统 125%/150% DPI 设置', '跨不同 DPI 的真实多显示器拖动未实测'] };
@@ -1434,5 +1434,5 @@ run().then(() => { completed = true; }).catch((error) => { console.error(error);
   await fs.mkdir(artifacts, { recursive: true });
   const name = process.env.RACK_EXE ? 'packaged-verification.json' : 'verification.json';
   await fs.writeFile(path.join(artifacts, name), JSON.stringify(verification, null, 2));
-  console.log(`验证记录：test-artifacts/v0.8.6/${name}`);
+  console.log(`验证记录：${path.join(artifacts, name)}`);
 });

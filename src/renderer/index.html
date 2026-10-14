@@ -40,7 +40,7 @@
         </div>
       </header>
 
-      <svg class="clothesline" viewBox="0 0 900 43" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="clothesline" viewBox="0 0 900 43" preserveAspectRatio="none" aria-hidden="true" data-interactive>
         <defs><filter id="rope-shadow" x="-5%" y="-50%" width="110%" height="250%"><feDropShadow dx="0" dy="1.4" stdDeviation="1.5" flood-color="#574637" flood-opacity=".24"/></filter></defs>
         <path class="rope-base" d="M-15 10Q450 45 915 10" filter="url(#rope-shadow)"/>
         <path class="rope-highlight" d="M-15 9Q450 44 915 9"/>
@@ -53,11 +53,16 @@
       <button class="scroll-button scroll-left" id="scrollLeft" type="button" title="向左翻看" aria-label="向左翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
       <button class="scroll-button scroll-right" id="scrollRight" type="button" title="向右翻看" aria-label="向右翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button>
 
-      <div class="empty-hanging-card" id="emptyState">
+      <div class="empty-hanging-card" id="emptyState" data-interactive>
         <span class="wooden-clip" aria-hidden="true"></span>
-        <div class="empty-inner"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 12V6h6M20 6h6v6M26 20v6h-6M12 26H6v-6M11 17l3-3 4 4 3-5"/><circle cx="12" cy="11" r="1"/></svg><div class="empty-title">今天的第一张，挂这里。</div><div class="empty-description">复制图片后悬停衣架，按 <kbd>Ctrl</kbd> + <kbd>V</kbd><br>也可以点击「添加便签」，记下灵感</div><div class="empty-footnote">暂停也可粘贴 · 点击查看 · 多张同时打开</div></div>
+        <div class="empty-inner"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 12V6h6M20 6h6v6M26 20v6h-6M12 26H6v-6M11 17l3-3 4 4 3-5"/><circle cx="12" cy="11" r="1"/></svg><div class="empty-title">今天的第一张，挂这里。</div><div class="empty-description">本机图片，直接拖到衣架上<br>复制图片后按 <kbd>Ctrl</kbd> + <kbd>V</kbd>，也能挂图</div><div class="empty-footnote">暂停也可拖入 · 添加便签，记下灵感</div></div>
       </div>
-      <button class="new-photo-button" id="newPhotoButton" type="button" hidden data-interactive><span class="new-photo-dot"></span><span id="newPhotoLabel">有新截图</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m9 4-4 4 4 4"/></svg></button>
+      <div class="file-drop-overlay" id="fileDropOverlay" role="status" aria-live="polite" hidden>
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 19v6h18v-6M16 7v13M11 12l5-5 5 5"/></svg>
+        <span class="file-drop-title" id="fileDropTitle">松手，把图片挂上来</span>
+        <span class="file-drop-description" id="fileDropDescription">PNG / JPG / JPEG / WebP · 可一次拖入多张</span>
+      </div>
+      <button class="new-photo-button" id="newPhotoButton" type="button" hidden data-interactive><span class="new-photo-dot"></span><span id="newPhotoLabel">有新图片</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m9 4-4 4 4 4"/></svg></button>
       <div class="error-message" id="errorMessage" role="status" hidden data-interactive></div>
     </div>
     <div class="auto-hide-tab" id="autoHideTab" hidden aria-hidden="true">晾衣架 · 移到顶部展开</div>

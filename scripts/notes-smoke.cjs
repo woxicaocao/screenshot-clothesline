@@ -7,7 +7,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const mode = process.env.RACK_EXE ? 'packaged' : 'development';
-const artifacts = path.join(root, 'test-artifacts', 'v0.8.6', `notes-${mode}`);
+const artifacts = path.join(root, 'test-artifacts', `v${require('../package.json').version}`, `notes-${mode}`);
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
 const profile = path.join(artifacts, 'profiles', runId);
 const verification = { date: new Date().toISOString(), mode, profile, tests: [],

@@ -10,7 +10,7 @@ const { nativeCursor } = require('./native-photo-drag.cjs');
 
 const root = path.resolve(__dirname, '..');
 const mode = process.env.RACK_EXE ? 'packaged' : 'development';
-const artifacts = path.join(root, 'test-artifacts', 'v0.8.6', `auto-hide-realtime-${mode}`);
+const artifacts = path.join(root, 'test-artifacts', `v${require('../package.json').version}`, `auto-hide-realtime-${mode}`);
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
 const profile = path.join(artifacts, 'profiles', runId);
 const verification = {

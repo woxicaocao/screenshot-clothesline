@@ -26,6 +26,9 @@
   const newButton = document.getElementById('newPhotoButton');
   const newLabel = document.getElementById('newPhotoLabel');
   const errorMessage = document.getElementById('errorMessage');
+  const fileDropOverlay = document.getElementById('fileDropOverlay');
+  const fileDropTitle = document.getElementById('fileDropTitle');
+  const fileDropDescription = document.getElementById('fileDropDescription');
   const cards = new Map();
   const pendingIds = new Set();
   const dateFormatter = new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
@@ -45,6 +48,11 @@
   let photoDragStarted = false;
   let expandedScrollLeft = 0;
   let pastePromise = null;
+  let importPromise = null;
+  let fileDropHover = false;
+  let fileDropDepth = 0;
+  let fileDropTimeout = null;
+  let lastFileDropHeartbeat = 0;
 
   function safeDate(value) {
     const date = new Date(value);
@@ -88,7 +96,7 @@
     imageWrap.className = 'photo-image-wrap';
     const image = document.createElement('img');
     if (photo.thumbnailUrl) image.src = photo.thumbnailUrl;
-    image.alt = '已收集的截图';
+    image.alt = '已收集的图片';
     image.loading = 'lazy';
     image.decoding = 'async';
     image.draggable = true;
@@ -248,7 +256,7 @@
   function updateNewButton() {
     newButton.hidden = pendingIds.size === 0;
     const hasNote = [...pendingIds].some(id => photos[byId.get(id)]?.type === 'note');
-    newLabel.textContent = hasNote ? `${pendingIds.size} 张新内容` : `${pendingIds.size} 张新截图`;
+    newLabel.textContent = hasNote ? `${pendingIds.size} 张新内容` : `${pendingIds.size} 张新图片`;
   }
 
   function showError(message) {
@@ -288,10 +296,15 @@
       autoHidden: !!snapshot.state?.autoHidden,
       manuallyHidden: !!snapshot.state?.manuallyHidden,
       dragging: !!snapshot.state?.dragging,
+      externalDragging: !!snapshot.state?.externalDragging,
+      importing: !!snapshot.state?.importing,
       pasteShortcutAvailable: !!snapshot.state?.pasteShortcutAvailable,
       pasteShortcutBlocked: !!snapshot.state?.pasteShortcutBlocked
     };
-    if (state.autoHidden || state.manuallyHidden) setPasteHover(false);
+    if (state.autoHidden || state.manuallyHidden) {
+      setPasteHover(false);
+      clearFileDropHover();
+    }
     app.hidden = state.autoHidden;
     expandedScrollLeft = restoredPosition;
     if (!state.autoHidden) scroll.scrollLeft = restoredPosition;
@@ -338,13 +351,13 @@
   }
 
   function pasteClipboard() {
-    if (!api || pastePromise || state.autoHidden || state.manuallyHidden || state.dragging || drag) return;
+    if (!api || pastePromise || importPromise || fileDropHover || state.autoHidden || state.manuallyHidden || state.dragging || drag) return;
     pastePromise = runAction(() => api.pasteClipboard(), pasteButton);
     pastePromise.finally(() => { pastePromise = null; });
   }
 
   function setInteractive(next) {
-    if (drag) next = true;
+    if (drag || fileDropHover || importPromise) next = true;
     if (interactive === next) return;
     interactive = next;
     if (api) api.setInteractive(next);
@@ -362,13 +375,103 @@
   }
 
   function refreshInteractive() {
-    if (drag) { setInteractive(true); return; }
+    if (drag || fileDropHover || importPromise) { setInteractive(true); return; }
     if (!pointerPosition || state.autoHidden || state.manuallyHidden) { setInteractive(false); return; }
     const x = pointerPosition.x - window.screenX;
     const y = pointerPosition.y - window.screenY;
     const element = document.elementFromPoint(x, y);
     setInteractive(!!element?.closest('[data-interactive]'));
   }
+
+  function hasFileDrag(event) {
+    return Array.from(event.dataTransfer?.types || []).includes('Files');
+  }
+
+  function updateFileDrop() {
+    const active = fileDropHover || !!importPromise;
+    fileDropOverlay.hidden = !active;
+    document.body.classList.toggle('is-file-drop-active', active);
+    document.body.classList.toggle('is-importing', !!importPromise);
+    fileDropTitle.textContent = importPromise ? '正在把图片挂上来…' : '松手，把图片挂上来';
+    fileDropDescription.textContent = importPromise
+      ? '保存本地副本 · 原文件保留'
+      : 'PNG / JPG / JPEG / WebP · 可一次拖入多张';
+    if (api) api.setFileDropActive(active);
+    lastFileDropHeartbeat = performance.now();
+    refreshInteractive();
+  }
+
+  function clearFileDropHover() {
+    if (fileDropTimeout !== null) window.clearTimeout(fileDropTimeout);
+    fileDropTimeout = null;
+    fileDropDepth = 0;
+    if (!fileDropHover) return;
+    fileDropHover = false;
+    updateFileDrop();
+  }
+
+  function keepFileDropHover(event) {
+    rememberPointer(event);
+    setPasteHover(false);
+    if (!fileDropHover) {
+      fileDropHover = true;
+      updateFileDrop();
+    } else if (api && performance.now() - lastFileDropHeartbeat >= 400) {
+      api.setFileDropActive(true);
+      lastFileDropHeartbeat = performance.now();
+    }
+    if (fileDropTimeout !== null) window.clearTimeout(fileDropTimeout);
+    // Only a live drag has a timer; abandoned drags cannot leave the rack suspended.
+    fileDropTimeout = window.setTimeout(clearFileDropHover, 1600);
+  }
+
+  async function importDroppedFiles(files) {
+    if (!api || importPromise) return;
+    clearFileDropHover();
+    errorMessage.hidden = true;
+    importPromise = (async () => {
+      try {
+        const result = await api.importLocalImages(files);
+        if (result?.failed || result?.error || result?.unavailable) showError(result.message || '图片未能导入，请检查后重新拖入。');
+        else if (result?.message) statusText.textContent = result.message;
+      } catch (error) {
+        showError(error?.message || '导入图片失败，请从本机文件夹重新拖入。');
+      }
+    })();
+    updateFileDrop();
+    try { await importPromise; }
+    finally {
+      importPromise = null;
+      updateFileDrop();
+    }
+  }
+
+  document.addEventListener('dragenter', event => {
+    event.preventDefault();
+    if (!hasFileDrag(event) || state.externalDragging || drag || state.manuallyHidden) return;
+    fileDropDepth += 1;
+    keepFileDropHover(event);
+  });
+  document.addEventListener('dragover', event => {
+    event.preventDefault();
+    const accepted = hasFileDrag(event) && !state.externalDragging && !drag && !state.manuallyHidden && !importPromise;
+    if (event.dataTransfer) event.dataTransfer.dropEffect = accepted ? 'copy' : 'none';
+    if (accepted) keepFileDropHover(event);
+  });
+  document.addEventListener('dragleave', event => {
+    if (!fileDropHover) return;
+    fileDropDepth = Math.max(0, fileDropDepth - 1);
+    if (fileDropDepth === 0 || event.clientX <= 0 || event.clientY <= 0 || event.clientX >= window.innerWidth || event.clientY >= window.innerHeight) clearFileDropHover();
+  });
+  document.addEventListener('drop', event => {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files || []);
+    clearFileDropHover();
+    if (!files.length || state.externalDragging || drag || state.manuallyHidden) return;
+    if (importPromise) { showError('上一批图片正在导入，请完成后再拖入。'); return; }
+    void importDroppedFiles(files);
+  });
+  document.addEventListener('dragend', clearFileDropHover);
 
   function finishDrag(event) {
     if (!drag || (event && event.pointerId !== drag.pointerId)) return;
@@ -408,9 +511,9 @@
   }, { passive: true });
   document.addEventListener('mouseleave', () => { setPasteHover(false); if (!drag) setInteractive(false); });
   document.documentElement.addEventListener('pointerleave', () => setPasteHover(false));
-  window.addEventListener('blur', () => { setPasteHover(false); if (!drag) setInteractive(false); });
-  window.addEventListener('pagehide', () => setPasteHover(false));
-  document.addEventListener('visibilitychange', () => { if (document.hidden) setPasteHover(false); });
+  window.addEventListener('blur', () => { setPasteHover(false); clearFileDropHover(); if (!drag) setInteractive(false); });
+  window.addEventListener('pagehide', () => { setPasteHover(false); clearFileDropHover(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { setPasteHover(false); clearFileDropHover(); } });
   document.addEventListener('wheel', event => {
     if (!event.target.closest('.photo-card') || event.ctrlKey) return;
     event.preventDefault();
@@ -463,6 +566,8 @@
   }
   window.addEventListener('beforeunload', () => {
     setPasteHover(false);
+    clearFileDropHover();
+    if (api) api.setFileDropActive(false);
     finishDrag();
     if (unsubscribe) unsubscribe();
     if (unsubscribePhotoDrag) unsubscribePhotoDrag();
