@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'none'">
+  <title>浏览器连接 · 截图晾衣架</title>
+  <link rel="stylesheet" href="browser-connection.css">
+  <script src="browser-connection.js" defer></script>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">CHROME / EDGE</div>
+    <h1>把网页图片挂起来</h1>
+    <p>加载配套扩展后，在网页图片上右键，选择「添加到晾衣架」。</p>
+    <ol>
+      <li>在 Chrome 或 Edge 的扩展管理中加载「浏览器扩展」文件夹。</li>
+      <li>点击扩展图标，把下方连接码粘贴进去，点击连接。</li>
+    </ol>
+    <label for="connectionCode">你的本机连接码</label>
+    <textarea id="connectionCode" readonly spellcheck="false" aria-label="浏览器连接码">正在准备连接…</textarea>
+    <div class="actions"><button id="copyCode" disabled>复制连接码</button><button id="closeWindow" class="secondary">完成</button></div>
+    <div id="message" role="status">连接码只给你自己的浏览器扩展使用。</div>
+  </main>
+</body>
+</html>

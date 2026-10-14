@@ -1,0 +1,67 @@
+{
+  "name": "screenshot-clothesline",
+  "version": "0.8.6",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woxicaocao/screenshot-clothesline.git"
+  },
+  "homepage": "https://github.com/woxicaocao/screenshot-clothesline#readme",
+  "bugs": {
+    "url": "https://github.com/woxicaocao/screenshot-clothesline/issues"
+  },
+  "description": "把截图夹在桌面晾衣绳上的 Windows 小挂件",
+  "private": true,
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "smoke": "node scripts/smoke.cjs",
+    "smoke:notes": "node scripts/notes-smoke.cjs",
+    "smoke:appreciation": "node scripts/appreciation-smoke.cjs",
+    "dist": "electron-builder --win zip --x64",
+    "memory": "node scripts/memory-benchmark.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.62.1"
+  },
+  "build": {
+    "appId": "local.screenshot.clothesline",
+    "productName": "截图晾衣架",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "release/v0.8.6"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraFiles": [
+      {
+        "from": "docs/使用手册.md",
+        "to": "使用说明.md"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE-MIT.txt"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/app.ico",
+      "signAndEditExecutable": true,
+      "signExecutable": false
+    },
+    "artifactName": "screenshot-clothesline-${version}-win-${arch}.${ext}",
+    "asar": true
+  }
+}

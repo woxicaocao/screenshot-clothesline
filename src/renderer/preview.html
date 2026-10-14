@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' rack-image: data:; style-src 'self'; script-src 'self'; connect-src 'none'">
+    <title>截图预览 · 截图晾衣架</title>
+    <link rel="stylesheet" href="preview.css">
+    <script src="preview.js" defer></script>
+  </head>
+  <body>
+    <header class="preview-titlebar" title="按住图片、文字或空白移动窗口">
+      <div class="preview-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8q8 4 16 0M9 5l-2 7M14 7l-2 7M5 12l14 2-1 7-14-2Z"/></svg><div><span class="preview-title" id="previewTitle">截图预览</span><span class="preview-source" id="previewSource">截图晾衣架</span></div></div>
+      <span class="preview-captured" id="capturedAt"></span>
+    </header>
+    <div class="preview-actions" aria-label="当前图片窗口操作">
+      <button class="icon-button pin-button" id="previewPinButton" type="button" disabled aria-pressed="false" title="置顶当前图片" aria-label="置顶当前图片"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 3 8 0-1 5 3 3H4l3-3-1-5Zm4 8v6"/></svg></button>
+      <button class="icon-button close-button" id="closeButton" type="button" title="关闭预览 · Esc" aria-label="关闭预览"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+    </div>
+    <main class="image-stage" id="imageStage" data-testid="preview-stage" aria-label="截图原图，按住移动窗口，拖动边框调整大小，图片保持比例自适应，滚轮同步缩放，右键更多操作">
+      <div class="image-world" id="imageWorld" hidden><img id="previewImage" data-testid="preview-image" alt="截图原图" draggable="false"></div>
+      <div class="loading-message" id="loadingMessage"><span class="loading-dot"></span>正在展开这张截图…</div>
+    </main>
+    <div class="preview-resize-zone" data-preview-resize-edge="n" aria-hidden="true" title="拖动上边调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="s" aria-hidden="true" title="拖动下边调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="e" aria-hidden="true" title="拖动右边调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="w" aria-hidden="true" title="拖动左边调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="ne" aria-hidden="true" title="拖动右上角调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="nw" aria-hidden="true" title="拖动左上角调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="se" aria-hidden="true" title="拖动右下角调整窗口大小"></div>
+    <div class="preview-resize-zone" data-preview-resize-edge="sw" aria-hidden="true" title="拖动左下角调整窗口大小"></div>
+    <footer class="preview-footer">
+      <div class="image-details"><span class="detail-dot"></span><span id="imageDimensions">原始截图</span><span class="preview-hint">滚轮同步缩放 · 按住移动窗口</span></div>
+      <div class="zoom-controls">
+        <button id="zoomOut" type="button" disabled title="缩小图片和窗口 · −" aria-label="缩小图片和窗口"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 10h10"/></svg></button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button id="zoomIn" type="button" disabled title="放大图片和窗口 · +" aria-label="放大图片和窗口"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 10h10M10 5v10"/></svg></button>
+        <span class="control-divider"></span>
+        <button class="fit-button" id="fitButton" type="button" disabled title="适应屏幕 · 0">适应屏幕</button>
+        <button class="fit-button" id="actualButton" type="button" disabled title="原始大小 · 1">1:1</button>
+      </div>
+    </footer>
+    <div class="preview-error" id="previewError" role="status" hidden></div>
+  </body>
+</html>

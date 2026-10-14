@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'none'">
+    <title>便签 · 截图晾衣架</title>
+    <link rel="stylesheet" href="note.css">
+    <script src="note.js" defer></script>
+  </head>
+  <body>
+    <section class="note-window" aria-label="便签编辑窗口">
+      <header class="note-titlebar" id="noteDragHandle">
+        <div class="note-brand"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 17H4V3h12v10l-4 4ZM12 17v-4h4M7 7h6M7 10h4"/></svg><span id="noteTitle">便签</span><span class="move-hint">拖动这里移动</span></div>
+        <button class="note-button pin-button" id="notePinButton" type="button" aria-pressed="false" title="仅将这张便签置顶" aria-label="将这张便签置顶"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 3 6 0-1 5 3 3H5l3-3-1-5ZM10 11v6"/></svg><span id="notePinLabel">置顶</span></button>
+        <button class="note-button close-button" id="noteCloseButton" type="button" title="关闭并保存到晾衣架 · Esc" aria-label="关闭便签并保存到晾衣架"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+      </header>
+      <main class="note-content">
+        <textarea class="note-input" id="noteInput" data-testid="note-input" aria-label="便签正文" placeholder="写下要记住的事…" spellcheck="false" maxlength="50000" disabled></textarea>
+      </main>
+      <div class="note-error" id="noteError" role="alert" hidden></div>
+      <section class="note-appearance" aria-label="便签外观设置">
+        <div class="color-group"><div class="control-label"><span>纸张颜色</span><span id="noteColorName">奶油黄</span></div><div class="color-options" id="noteColors" role="group" aria-label="选择便签颜色"></div></div>
+        <label class="font-group"><span class="control-label">字号</span><select id="noteFontSize" aria-label="便签编辑窗口字体大小"><option value="14">14 px</option><option value="16">16 px</option><option value="18">18 px</option><option value="20">20 px</option><option value="24">24 px</option><option value="28">28 px</option><option value="32">32 px</option></select></label>
+      </section>
+      <footer class="note-footer"><span id="noteSaveStatus" role="status">关闭后自动挂回衣架</span><span class="character-count" id="noteCharacterCount">0 字</span></footer>
+    </section>
+  </body>
+</html>

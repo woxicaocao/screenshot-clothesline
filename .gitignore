@@ -1,0 +1,10 @@
+node_modules/
+release/
+test-artifacts/
+build-cache/
+*.log
+promo-*/
+docs/media/*.mp4
+docs/showcase/预览截图/
+docs/showcase/验收记录.json
+docs/showcase/发布准备说明.md

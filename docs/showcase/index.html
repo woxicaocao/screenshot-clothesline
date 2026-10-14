@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="截图晾衣架：自动收集剪贴板图片，悬浮查看原图，挂起彩色便签。Windows 解压即用。">
+  <title>截图晾衣架 · 自动挂图、悬浮对照、彩色便签</title>
+  <link rel="stylesheet" href="showcase.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到介绍正文</a>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#main" aria-label="截图晾衣架，回到页首">
+        <svg class="brand-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 13c8 4 22 4 30 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m10 16 2 15 15-2-2-15" fill="#f6f0df" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m17 8 2 13" stroke="#bb895e" stroke-width="5" stroke-linecap="round"/><path d="m16 10 2 10" stroke="#e5c7a3" stroke-width="2" stroke-linecap="round"/><path d="m15 26 3-4 4 2 2-3" stroke="#7e9680" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>截图晾衣架</span>
+      </a>
+      <span class="preview-label"><span aria-hidden="true"></span>Windows 桌面工具 · v0.8.6</span>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="eyebrow">A LITTLE SPACE FOR YOUR IDEAS</p>
+        <h1 id="hero-title">截图和灵感，<br>随手挂在<span class="marked">桌面上。</span></h1>
+        <p class="hero-description">自动挂图、悬浮对照、彩色便签，<br class="desktop-break">让需要的内容随时看得见。</p>
+        <div class="badges" aria-label="支持平台和版本">
+          <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m1 3 6-1v5H1Zm7-1 7-1v6H8ZM1 8h6v5l-6-1Zm7 0h7v6l-7-1Z" fill="currentColor"/></svg>Windows 10 / 11 · x64</span>
+          <span>v0.8.6</span><span>MIT 开源</span>
+        </div>
+        <nav class="hero-actions" aria-label="主要入口">
+          <a class="button button-primary" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>下载免安装版<span class="button-note">Windows ZIP</span></a>
+          <a class="button button-secondary" href="#demo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 8 5-8 5Z"/></svg>观看演示</a>
+          <a class="text-link" href="#start">快速上手<span aria-hidden="true">↗</span></a>
+        </nav>
+        <p class="publication-note">Windows 10 / 11 x64 · 完整解压后双击运行 · 无需安装 Node.js</p>
+        <figure class="hero-figure">
+          <img src="../media/hero.png" width="1440" height="540" alt="截图晾衣架实际界面：三张图片和一张便签夹在横向晾衣绳上，工具栏提供粘贴、暂停、置顶和自动隐藏等操作。" fetchpriority="high">
+          <figcaption><span class="caption-dot" aria-hidden="true"></span>你的桌面，多一条装灵感的晾衣绳。<span class="figure-tag">实际界面</span></figcaption>
+        </figure>
+      </section>
+
+      <section id="capture" class="section capture-section" aria-labelledby="capture-title">
+        <div class="section-heading">
+          <span class="chapter">01 / 先认识这个按钮</span>
+          <h2 id="capture-title">自动捕捉：照常截图，<br class="mobile-break">截完就挂上。</h2>
+          <p>使用 Windows 或微信等截图工具截图后，只要新图片进入剪贴板，晾衣架就会自动保存并挂上。复制网页图片也可以自动收集。</p>
+        </div>
+        <div class="capture-panel">
+          <figure class="capture-figure">
+            <img src="../media/auto-capture.png" width="1600" height="560" alt="工具栏自动捕捉控制按钮特写：显示暂停时正在收集；显示继续时已暂停，点击可恢复收集。" loading="lazy">
+            <figcaption>「暂停 / 继续」控制自动捕捉，不是启动截图。</figcaption>
+          </figure>
+          <div class="capture-explanation">
+            <p class="panel-kicker">看按钮文字，就知道现在的状态</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th scope="col">按钮显示</th><th scope="col">当前状态</th><th scope="col">点击后</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row"><span class="state-button"><span class="pause-symbol" aria-hidden="true">Ⅱ</span>暂停</span></th><td><span class="status-dot active" aria-hidden="true"></span>正在自动捕捉</td><td>停止自动收集新图片</td></tr>
+                  <tr><th scope="row"><span class="state-button"><span class="play-symbol" aria-hidden="true">▷</span>继续</span></th><td><span class="status-dot paused" aria-hidden="true"></span>自动捕捉已暂停</td><td>恢复收集后续新图片</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ol class="capture-flow" aria-label="自动捕捉操作流程">
+              <li><span class="flow-number">1</span><span>照常截图</span><small>Windows / 微信</small></li>
+              <li><span class="flow-number">2</span><span>图片进入剪贴板</span><small>不改写剪贴板</small></li>
+              <li><span class="flow-number">3</span><span>新图片自动挂上</span><small>通常约 2 秒内</small></li>
+            </ol>
+            <aside class="capture-tip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 13h6M8 16h4M6 11a6 6 0 1 1 8 0l-1 2H7Z"/></svg><p><strong>想自己决定什么时候挂图？先点「暂停」。</strong><br>暂停后仍可点「粘贴」，或把鼠标移到晾衣架按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 手动添加。</p></aside>
+            <p class="capture-footnote">启动或恢复收集时，会跳过剪贴板已有图片；重复图片不会反复挂上。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="demo" class="section demo-section" aria-labelledby="demo-title">
+        <div class="section-heading heading-inline">
+          <div><span class="chapter">02 / 看一遍就会用</span><h2 id="demo-title">49 秒，看懂怎么用。</h2></div>
+          <span class="quiet-pill">真实操作 · 中文配音</span>
+        </div>
+        <div class="video-frame">
+          <video id="demo-video" controls playsinline preload="metadata" poster="../media/video-cover.png" aria-label="截图晾衣架功能演示视频，包含截图收集、原图查看、悬浮、拖出、便签和自动隐藏操作。">
+            <source src="../media/demo-preview.mp4" type="video/mp4">
+            你的浏览器无法播放此视频。<a href="../media/demo-preview.mp4">下载功能演示视频</a>。
+          </video>
+        </div>
+        <div class="video-fallback" id="video-fallback" role="status" hidden>
+          <p>当前目录没有播放副本，或浏览器无法读取视频。也可以通过 GitHub 下载完整演示视频观看。</p>
+          <div><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/demo-preview.mp4" target="_blank" rel="noreferrer">下载播放副本</a><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/%E6%88%AA%E5%9B%BE%E6%99%BE%E8%A1%A3%E6%9E%B6%E5%8A%9F%E8%83%BD%E6%BC%94%E7%A4%BA_0.8.6OK.mp4" target="_blank" rel="noreferrer">下载完整原片</a><span>GitHub 下载入口待发布</span></div>
+        </div>
+        <p class="video-caption"><span>截图晾衣架功能演示_0.8.6OK.mp4</span><span>详情播放副本 · 原内容与配音保留</span></p>
+      </section>
+
+      <section class="section features-section" aria-labelledby="features-title">
+        <div class="section-heading">
+          <span class="chapter">03 / 把灵感留在手边</span>
+          <h2 id="features-title">从随手一截，到随时一看。</h2>
+          <p>看参考、存素材、记待办。把原本散落在窗口里的内容，挂到一个随时能看见的地方。</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <figure><img src="../media/paste.png" width="1200" height="750" alt="复制网页图片后，把鼠标移到晾衣架，按 Ctrl+V 添加图片。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">收集素材</span><h3>网页素材，复制就能挂。</h3><p>右键选择「复制图片」，把鼠标移到晾衣架，按 <kbd>Ctrl</kbd> + <kbd>V</kbd>。</p><p class="feature-detail">自动捕捉开启时，图片可能提前挂上；暂停后也能手动粘贴。</p></div>
+          </article>
+          <article class="feature-card">
+            <figure><img src="../media/preview.png" width="1200" height="750" alt="点击衣架上的图片打开原图，拖动极窄边框调整窗口大小，图片按比例适应窗口。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">查看原图</span><h3>点开原图，自由调整。</h3><p>点一下图片就能打开。按住图片移动窗口，拖动四边或四角调整大小。</p><p class="feature-detail">1 像素细边框，图片按比例适应；滚轮也能同步缩放图片和窗口。</p></div>
+          </article>
+          <article class="feature-card">
+            <figure><img src="../media/floating.png" width="1200" height="750" alt="多张不同图片同时以独立悬浮窗口置顶，工作时可以对照参考内容。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">悬浮对照</span><h3>多图悬浮，边做边对照。</h3><p>右键图片选择「悬浮」，多张图片分别置顶、移动，参考内容一直在手边。</p><p class="feature-detail">每个窗口独立控制。关闭窗口保留照片，衣架收起也不影响悬浮图。</p></div>
+          </article>
+          <article class="feature-card">
+            <figure><img src="../media/export.png" width="1200" height="750" alt="从晾衣架拖出原图到文件夹保存，或拖入聊天窗口准备发送。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">保存分享</span><h3>原图拖出来，保存或分享。</h3><p>拖进文件夹保存，拖进微信等支持图片拖放的聊天窗口后，再确认发送。</p><p class="feature-detail">拖出的是保存的原图文件，保留图片尺寸，不用缩略图代替。</p></div>
+          </article>
+          <article class="feature-card">
+            <figure><img src="../media/notes.png" width="1200" height="750" alt="彩色便签可以输入文字，设置预设或自定义颜色、字号和独立置顶，关闭后挂到衣架上。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">记下灵感</span><h3>写张彩色便签，记住灵感。</h3><p>点击「添加便签」，写下想法或待办。关掉编辑窗口，就自动挂好了。</p><p class="feature-detail">支持自定义颜色、字号与独立置顶；衣架摘要固定 14px，多张便签可同时打开。</p></div>
+          </article>
+          <article class="feature-card">
+            <figure><img src="../media/auto-hide.png" width="1200" height="750" alt="开启自动隐藏后鼠标离开晾衣架会收起，移到对应屏幕顶部重新展开，提供快中慢三个档位。" loading="lazy"></figure>
+            <div class="feature-body"><span class="feature-category">清爽桌面</span><h3>鼠标移开，桌面恢复清爽。</h3><p>开启「自动隐藏」，离开后收起；想再看，把鼠标移到对应屏幕顶部。</p><p class="feature-detail">快：立即收起 · 中：1 秒 · 慢：2 秒。图片已打开或置顶时仍能自动隐藏。</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="start" class="section start-section" aria-labelledby="start-title">
+        <div class="section-heading"><span class="chapter">04 / 三步开始</span><h2 id="start-title">解压，打开，照常截图。</h2><p>Windows 10 / 11 x64，无需安装 Node.js。</p></div>
+        <ol class="start-steps">
+          <li><span class="step-index">01</span><h3>完整解压</h3><p>下载免安装 ZIP，解压到你的软件目录。程序和旁边的依赖文件一起保留。</p></li>
+          <li><span class="step-index">02</span><h3>双击运行</h3><p>打开「截图晾衣架.exe」。已有旧版在运行时，先从托盘退出旧版。</p></li>
+          <li><span class="step-index">03</span><h3>截一张新图</h3><p>用 <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> 或微信截图，让新图片进入剪贴板。</p></li>
+        </ol>
+        <div class="start-bottom"><span>首次运行会跳过剪贴板已有图片，请新截一张试试。</span><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-0.8.6-win-x64.zip">下载免安装版 <span aria-hidden="true">↓</span></a></div>
+      </section>
+
+      <section class="section support-section" aria-labelledby="support-title">
+        <div class="section-heading"><span class="chapter">05 / 使用小贴士</span><h2 id="support-title">你可能还想知道。</h2></div>
+        <div class="faq-list">
+          <details open><summary>「暂停」为什么不叫「自动捕捉」？</summary><div class="faq-content"><p>这个按钮显示的是<strong>你下一步能做的操作</strong>：显示「暂停」说明正在自动捕捉；显示「继续」说明已经暂停。截图仍使用你熟悉的 Windows、微信等工具。</p></div></details>
+          <details><summary>复制网页图片，为什么按 Ctrl+V 前就挂上了？</summary><div class="faq-content"><p>自动捕捉会收集剪贴板中的新图片，所以复制后可能自动挂上。想手动添加，先点「暂停」，然后悬停衣架按 Ctrl+V 或点击「粘贴」。请选「复制图片」，复制图片地址、文字或文件路径不能直接挂图。</p></div></details>
+          <details><summary>原图和便签保存在哪里？</summary><div class="faq-content"><p>只保存在本机，不上传云端。应用数据目录是 <code>%APPDATA%\screenshot-clothesline</code>，原图在其 <code>photos</code> 子目录，目录中也保存缩略图、便签记录和设置。重启后继续保留。</p><p>在 Windows 资源管理器地址栏输入上面的路径即可打开。关闭预览不删图片；右键「删除」会永久移除对应内容及缓存。</p></div></details>
+          <details><summary>衣架收起来以后，悬浮图片也会关闭吗？</summary><div class="faq-content"><p>不会。衣架、图片预览和便签是独立窗口。开启自动隐藏后，鼠标离开衣架就按选定档位收起，已打开或置顶的图片继续显示。</p></div></details>
+          <details><summary>衣架上的小图，会影响原图清晰度吗？</summary><div class="faq-content"><p>衣架只加载小缩略图，减少日常显示的图片解码开销。点击、悬浮和拖出使用保存的原图，不降低原图尺寸。运行内存也会随图片大小和同时打开的窗口数量变化。</p></div></details>
+        </div>
+        <div class="developer-block">
+          <div><span class="chapter">给想动手的人</span><h3>开源，也欢迎一起改进。</h3><p>源码采用 MIT 许可证。项目基于 Electron，可本地运行与构建。</p><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/issues" target="_blank" rel="noreferrer">问题反馈 <span aria-hidden="true">↗</span></a><p class="publication-note">欢迎反馈使用体验与改进建议。</p></div>
+          <pre aria-label="从源码运行、测试和构建的命令"><code><span class="code-comment"># 项目目录中执行</span>
+npm ci
+npm start
+
+<span class="code-comment"># 验证与打包</span>
+npm test
+npm run dist</code></pre>
+        </div>
+      </section>
+
+      <section class="appreciation-section" aria-label="支持作者">
+        <details class="appreciation"><summary>赞赏<span>如果它帮到了你，可以请作者喝杯茶。</span><span class="details-plus" aria-hidden="true">+</span></summary><div class="appreciation-content"><img src="../media/appreciation-qr.png" width="280" height="280" alt="作者提供的赞赏收款二维码，请使用相应支付应用扫描，并确认收款信息。" loading="lazy"><p>感谢你的支持。赞赏自愿，所有功能照常使用。</p></div></details>
+      </section>
+    </main>
+    <footer class="footer"><span>截图晾衣架 · 随手挂，随时看。</span><span>Windows · v0.8.6 · MIT</span></footer>
+  </div>
+  <script>
+    (() => {
+      const video = document.getElementById('demo-video');
+      const fallback = document.getElementById('video-fallback');
+      const showFallback = () => { fallback.hidden = false; };
+      video.addEventListener('error', showFallback, true);
+      if (video.error) showFallback();
+    })();
+  </script>
+</body>
+</html>

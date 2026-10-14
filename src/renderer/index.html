@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' rack-image: data:; style-src 'self'; script-src 'self'; connect-src 'none'">
+    <title>截图晾衣架</title>
+    <link rel="stylesheet" href="rack.css">
+    <script src="rack.js" defer></script>
+  </head>
+  <body>
+    <div class="rack-app">
+      <header class="toolbar" data-interactive>
+        <div class="brand drag-handle" data-drag-handle data-interactive title="按住并拖动，移动晾衣架">
+          <svg class="brand-mark" width="23" height="25" viewBox="0 0 23 25" aria-hidden="true"><path d="M7 3 15 5 11 23 5 22Z" fill="#ba8750"/><path d="m12 2 7 2-5 19-6-1Z" fill="#e4bb81"/><path d="m7 11 10 2" stroke="#755f43" stroke-width="2"/><circle cx="11.5" cy="12" r="2.5" fill="none" stroke="#755f43" stroke-width="1.5"/></svg>
+          <span class="brand-name">截图晾衣架<span class="brand-tag" id="pasteHint">悬停衣架 · Ctrl+V 粘贴</span></span>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="rack-summary"><span class="collection-dot" id="collectionDot"></span><span id="photoCount">0 张</span><span class="status-text" id="statusText">等一张新截图</span></div>
+        <div class="toolbar-actions">
+          <button class="tool-button add-note-button" id="addNoteButton" type="button" title="添加便签，写完关闭后自动挂到晾衣架" aria-label="添加便签" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 17H4V3h12v10l-4 4ZM12 17v-4h4M7 7h6M7 10h4"/></svg><span>添加便签</span></button>
+          <button class="tool-button paste-button" id="pasteButton" type="button" title="复制图片后，将鼠标移到晾衣架，按 Ctrl+V；也可以点击粘贴。暂停收集时仍可使用。" aria-label="粘贴剪贴板图片，暂停收集时也可使用" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2M7 3h6v3H7ZM10 9v5M7.5 11.5h5"/></svg><span>粘贴</span><kbd>Ctrl+V</kbd></button>
+          <button class="tool-button drag-handle" id="dragHandle" type="button" title="按住并拖动，移动晾衣架" aria-label="按住并拖动，移动晾衣架" data-drag-handle data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14M3 10h14M7 6l3-3 3 3M7 14l3 3 3-3M6 7l-3 3 3 3M14 7l3 3-3 3"/></svg><span>拖动</span></button>
+          <button class="tool-button" id="pauseButton" type="button" title="暂停自动收集" aria-label="暂停自动收集" aria-pressed="false" data-interactive>
+            <svg class="pause-symbol" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10"/></svg>
+            <svg class="play-symbol" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 5 8 5-8 5Z"/></svg><span id="pauseLabel">暂停</span>
+          </button>
+          <button class="tool-button" id="pinButton" type="button" title="将晾衣架固定在所有窗口上方" aria-label="始终置顶" aria-pressed="false" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 3 6 0-1 5 3 3H5l3-3-1-5ZM10 11v6"/></svg><span>置顶</span></button>
+          <div class="auto-hide-options">
+            <button class="tool-button" id="autoHideButton" type="button" title="开启自动隐藏：鼠标离开 1 秒后收起到屏幕顶部" aria-label="开启自动隐藏" aria-pressed="false" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 8v8h12V8M7 11l3-3 3 3M10 8v6"/></svg><span>自动隐藏</span></button>
+            <div class="auto-hide-speed" id="autoHideSpeedControl" role="group" aria-label="自动隐藏速度" hidden data-interactive>
+              <span class="speed-label">收起速度</span>
+              <button type="button" data-speed="fast" data-interactive aria-pressed="false" title="鼠标离开立即隐藏">快<span>立即</span></button>
+              <button type="button" data-speed="medium" data-interactive aria-pressed="true" title="鼠标离开 1 秒后隐藏">中<span>1 秒</span></button>
+              <button type="button" data-speed="slow" data-interactive aria-pressed="false" title="鼠标离开 2 秒后隐藏">慢<span>2 秒</span></button>
+            </div>
+          </div>
+          <button class="tool-button" id="appreciationButton" type="button" title="赞赏支持" aria-label="赞赏支持" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 17 3.7 10.6C.2 7.1 5.2 1.8 10 6.2c4.8-4.4 9.8.9 6.3 4.4Z"/></svg><span>赞赏</span></button>
+          <button class="tool-button hide-button" id="hideButton" type="button" title="收起到系统托盘" aria-label="隐藏到系统托盘" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M6 5h8M6 15h8"/></svg></button>
+        </div>
+      </header>
+
+      <svg class="clothesline" viewBox="0 0 900 43" preserveAspectRatio="none" aria-hidden="true">
+        <defs><filter id="rope-shadow" x="-5%" y="-50%" width="110%" height="250%"><feDropShadow dx="0" dy="1.4" stdDeviation="1.5" flood-color="#574637" flood-opacity=".24"/></filter></defs>
+        <path class="rope-base" d="M-15 10Q450 45 915 10" filter="url(#rope-shadow)"/>
+        <path class="rope-highlight" d="M-15 9Q450 44 915 9"/>
+        <path class="rope-twist" d="M-15 10Q450 45 915 10"/>
+      </svg>
+
+      <main class="photo-scroll" id="photoScroll" data-testid="photo-track" aria-label="衣架上的图片和便签，使用滚轮左右翻看">
+        <div class="photo-track" id="photoTrack"></div>
+      </main>
+      <button class="scroll-button scroll-left" id="scrollLeft" type="button" title="向左翻看" aria-label="向左翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
+      <button class="scroll-button scroll-right" id="scrollRight" type="button" title="向右翻看" aria-label="向右翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button>
+
+      <div class="empty-hanging-card" id="emptyState">
+        <span class="wooden-clip" aria-hidden="true"></span>
+        <div class="empty-inner"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 12V6h6M20 6h6v6M26 20v6h-6M12 26H6v-6M11 17l3-3 4 4 3-5"/><circle cx="12" cy="11" r="1"/></svg><div class="empty-title">今天的第一张，挂这里。</div><div class="empty-description">复制图片后悬停衣架，按 <kbd>Ctrl</kbd> + <kbd>V</kbd><br>也可以点击「添加便签」，记下灵感</div><div class="empty-footnote">暂停也可粘贴 · 点击查看 · 多张同时打开</div></div>
+      </div>
+      <button class="new-photo-button" id="newPhotoButton" type="button" hidden data-interactive><span class="new-photo-dot"></span><span id="newPhotoLabel">有新截图</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m9 4-4 4 4 4"/></svg></button>
+      <div class="error-message" id="errorMessage" role="status" hidden data-interactive></div>
+    </div>
+    <div class="auto-hide-tab" id="autoHideTab" hidden aria-hidden="true">晾衣架 · 移到顶部展开</div>
+  </body>
+</html>
