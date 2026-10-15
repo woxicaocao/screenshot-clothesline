@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="description" content="截图晾衣架：自动收集剪贴板图片，悬浮查看原图，挂起彩色便签。Windows 解压即用。">
-  <title>截图晾衣架 · 自动挂图、悬浮对照、彩色便签</title>
+  <meta name="description" content="截图晾衣架：自动收集剪贴板图片，悬浮查看原图，挂起彩色便签。0.8.8 测试版新增木夹排序、同类分组与图片框选批量拖出，Windows 解压即用。">
+  <title>截图晾衣架 · 自动挂图、分组整理、悬浮对照</title>
   <link rel="stylesheet" href="showcase.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
         <svg class="brand-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 13c8 4 22 4 30 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m10 16 2 15 15-2-2-15" fill="#f6f0df" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m17 8 2 13" stroke="#bb895e" stroke-width="5" stroke-linecap="round"/><path d="m16 10 2 10" stroke="#e5c7a3" stroke-width="2" stroke-linecap="round"/><path d="m15 26 3-4 4 2 2-3" stroke="#7e9680" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>截图晾衣架</span>
       </a>
-      <span class="preview-label"><span aria-hidden="true"></span>Windows 桌面工具 · v0.8.7</span>
+      <span class="preview-label"><span aria-hidden="true"></span>Windows 桌面工具 · 0.8.8 测试版</span>
     </header>
 
     <main id="main">
@@ -26,14 +26,15 @@
         <p class="hero-description">自动挂图、悬浮对照、彩色便签，<br class="desktop-break">让需要的内容随时看得见。</p>
         <div class="badges" aria-label="支持平台和版本">
           <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m1 3 6-1v5H1Zm7-1 7-1v6H8ZM1 8h6v5l-6-1Zm7 0h7v6l-7-1Z" fill="currentColor"/></svg>Windows 10 / 11 · x64</span>
-          <span>v0.8.7</span><span>MIT 开源</span>
+          <span>v0.8.8-beta.4 · 测试版</span><span>MIT 开源</span>
         </div>
         <nav class="hero-actions" aria-label="主要入口">
-          <a class="button button-primary" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>下载免安装版<span class="button-note">Windows ZIP</span></a>
+          <a class="button button-primary" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.8-beta.4/screenshot-clothesline-0.8.8-beta.4-win-x64.zip"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>下载免安装测试版<span class="button-note">Windows ZIP</span></a>
           <a class="button button-secondary" href="#demo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 8 5-8 5Z"/></svg>观看演示</a>
           <a class="text-link" href="#start">快速上手<span aria-hidden="true">↗</span></a>
         </nav>
         <p class="publication-note">Windows 10 / 11 x64 · 完整解压后双击运行 · 无需安装 Node.js</p>
+        <a class="release-teaser" href="#organize"><span>本次更新</span>拖木夹整理，同类自动成组，框选后一把拖出。<span aria-hidden="true">↓</span></a>
         <figure class="hero-figure">
           <img src="../media/hero.png" width="1440" height="540" alt="截图晾衣架实际界面：三张图片和一张便签夹在横向晾衣绳上，工具栏提供粘贴、暂停、置顶和自动隐藏等操作。" fetchpriority="high">
           <figcaption><span class="caption-dot" aria-hidden="true"></span>你的桌面，多一条装灵感的晾衣绳。<span class="figure-tag">实际界面</span></figcaption>
@@ -86,21 +87,72 @@
         </div>
         <div class="video-fallback" id="video-fallback" role="status" hidden>
           <p>当前目录没有播放副本，或浏览器无法读取视频。也可以通过 GitHub 下载完整演示视频观看。</p>
-          <div><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/demo-preview.mp4" target="_blank" rel="noreferrer">下载播放副本</a><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4" target="_blank" rel="noreferrer">下载完整原片</a><span>GitHub 下载入口待发布</span></div>
+          <div><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/demo-preview.mp4" target="_blank" rel="noreferrer">下载播放副本</a><a href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.6/screenshot-clothesline-demo-0.8.6OK.mp4" target="_blank" rel="noreferrer">下载完整原片</a></div>
         </div>
-        <p class="video-caption"><span>截图晾衣架功能演示_0.8.6OK.mp4</span><span>0.8.6 功能演示 · 原内容与配音保留</span></p>
+        <p class="video-caption"><span>截图晾衣架功能演示_0.8.6OK.mp4</span><span>0.8.6 基础功能演示 · 新版整理与分组见下方实图</span></p>
+      </section>
+
+      <section id="organize" class="section updates-section" aria-labelledby="updates-title">
+        <div class="section-heading heading-inline">
+          <div><span class="chapter">03 / 0.8.8 测试版 · 最近更新</span><h2 id="updates-title">挂得多，也能放得有条理。</h2></div>
+          <span class="quiet-pill">v0.8.8-beta.4</span>
+        </div>
+        <p class="updates-intro">把一套参考放一组，把一批原图一起带走。图片和便签都能整理，熟悉的原图拖出操作也继续保留。</p>
+
+        <article class="update-story">
+          <div class="update-copy">
+            <span class="feature-category">木夹排序 · 同类分组</span>
+            <h3>捏住木夹，<br>把灵感归到一起。</h3>
+            <p>拖木夹到卡片两侧，调整顺序；拖到另一张卡片中央，停留约 <strong>350 毫秒</strong>，看到「松手成组」再松开。</p>
+            <div class="gesture-pair"><span><i class="gesture-clip" aria-hidden="true"></i><strong>拖木夹</strong><small>排序 / 成组</small></span><span><i class="gesture-photo" aria-hidden="true"></i><strong>拖图片主体</strong><small>导出原图</small></span></div>
+            <p class="update-detail">图片与图片成组，便签与便签成组；单张可加入同类组。组卡可排序，组之间不合并，也不嵌套。</p>
+          </div>
+          <figure class="update-shot"><img src="../media/groups.png" width="1020" height="635" alt="紧凑的图片组浏览窗口：组名、数量、置顶与更多位于同一标题栏，原图以三列缩略图网格展示。" loading="lazy"><figcaption>点击组卡，在独立窗口中浏览；窄窗口自动减少列数。</figcaption></figure>
+        </article>
+
+        <div class="update-columns">
+          <article class="update-note">
+            <span class="feature-category">独立组窗口</span><h3>一组参考，放在手边。</h3>
+            <p>组名、数量、<strong>置顶</strong>与「更多」收进同一条标题栏。窗口可移动、调整大小，图片仍能分别打开原图；便签显示颜色与固定 14px 文字摘要。</p>
+            <figure><img src="../media/group-notes.png" width="1020" height="635" alt="便签组中的彩色便签以网格排列，保留各自颜色，摘要使用固定14像素字号。" loading="lazy"><figcaption>图片组和便签组，分别整理、分别查看。</figcaption></figure>
+          </article>
+          <article class="update-note update-management">
+            <span class="feature-category">右键管理 · 自动保存</span><h3>整理时，每一步都明确。</h3>
+            <dl class="management-list">
+              <div><dt>重命名</dt><dd>给组取个好找的名字。</dd></div>
+              <div><dt>移出此组</dt><dd>成员回到衣架上，放在原组右侧。</dd></div>
+              <div><dt>解散组</dt><dd>按组内顺序展开，保留所有内容。</dd></div>
+              <div><dt>删除整个组</dt><dd>确认后，永久删除组内内容及对应缓存。</dd></div>
+            </dl>
+            <p class="update-detail">整组删除会清除应用保存的原图或便签；从本机导入的外部来源文件保留。组内只剩一项时，自动还原成普通卡片。</p>
+            <p class="save-note"><span aria-hidden="true"></span>排序、组名与成员会自动保存，重启后继续。</p>
+          </article>
+        </div>
+
+        <article class="batch-story" aria-labelledby="batch-title">
+          <div class="batch-heading"><div><span class="feature-category">图片组 · 框选与批量拖动</span><h3 id="batch-title">选好这一批，一次拖走。</h3></div><span class="quiet-pill">每次最多拖出 100 张原图</span></div>
+          <p>在图片组空白处按住左键拉框。选中后，拖任意选中图片的<strong>木夹</strong>批量排序；拖<strong>图片主体</strong>，就能把所选原图一起拖到文件夹或支持多文件拖放的程序。</p>
+          <div class="batch-shots"><figure><img src="../media/batch-marquee.png" width="1023" height="635" alt="从图片组空白处拖出选择框，选框覆盖的多张图片进入选中状态。" loading="lazy"><figcaption><span>01</span>空白处拉框，选中这一批。</figcaption></figure><figure><img src="../media/batch-select.png" width="1023" height="635" alt="多张图片显示选中边框与已选数量，拖木夹批量排序，拖图片主体批量导出原图。" loading="lazy"><figcaption><span>02</span>拖木夹整理，拖图片主体导出。</figcaption></figure></div>
+          <ul class="selection-keys" aria-label="图片组多选快捷键"><li><kbd>Ctrl</kbd> + 点击<span>增减选择</span></li><li><kbd>Shift</kbd> + 点击<span>连续选择</span></li><li><kbd>Ctrl</kbd> + <kbd>A</kbd><span>全选</span></li><li><kbd>Esc</kbd><span>取消选择</span></li></ul>
+          <p class="update-detail">批量拖出使用保存的原图。拖入微信等聊天窗口后，仍需确认发送；接收方式取决于目标程序对多文件拖放的支持。</p>
+        </article>
+
+        <div class="refinements">
+          <div><span class="feature-category">让日常操作更顺手</span><h3>少一点遮挡，<br>多一点自在。</h3><ul><li><strong>卡片间隙也能滚动</strong><span>整条浏览区域都响应滚轮，翻图不中断。</span></li><li><strong>新便签避开衣架</strong><span>优先在下方打开，多张便签错开标题栏。</span></li><li><strong>隐藏速度，悬停再设置</strong><span>开启后，鼠标停在「自动隐藏」上约 0.5 秒展开设置；移开后收起。</span></li></ul><p class="update-detail">快：立即收起 · 中：1 秒 · 慢：2 秒。打开组窗口或置顶图片，也不阻止衣架自动隐藏。</p></div>
+          <figure><img src="../media/auto-hide-options.png" width="1536" height="390" alt="开启自动隐藏后悬停约半秒展开快、中、慢三个档位，分别为立即、1秒和2秒收起。" loading="lazy"><figcaption>需要调整时才展开，让工具栏保持清爽。</figcaption></figure>
+        </div>
       </section>
 
       <section class="section features-section" aria-labelledby="features-title">
         <div class="section-heading">
-          <span class="chapter">03 / 把灵感留在手边</span>
+          <span class="chapter">04 / 把灵感留在手边</span>
           <h2 id="features-title">从随手一截，到随时一看。</h2>
           <p>看参考、存素材、记待办。把原本散落在窗口里的内容，挂到一个随时能看见的地方。</p>
         </div>
         <div class="feature-grid">
           <article class="feature-card">
             <figure><img src="../media/local-images.png" width="1024" height="260" alt="从文件夹拖入多张本机图片，保存副本挂到晾衣架。" loading="lazy" style="object-fit:contain;background:#f8f5ed"></figure>
-            <div class="feature-body"><span class="feature-category">0.8.7 新增 · 本机图片</span><h3>本机图片，拖进来就挂。</h3><p>从文件夹选中一张或多张图片，拖到展开的晾衣架上，松开即可添加。</p><p class="feature-detail">支持 PNG、JPG/JPEG、WebP。暂停时也能拖入；保留原文件，预览与拖出使用原图。</p></div>
+            <div class="feature-body"><span class="feature-category">本机图片</span><h3>本机图片，拖进来就挂。</h3><p>从文件夹选中一张或多张图片，拖到展开的晾衣架上，松开即可添加。</p><p class="feature-detail">支持 PNG、JPG/JPEG、WebP。暂停时也能拖入；保留原文件，预览与拖出使用原图。</p></div>
           </article>
           <article class="feature-card">
             <figure><img src="../media/paste.png" width="1200" height="750" alt="复制网页图片后，把鼠标移到晾衣架，按 Ctrl+V 添加图片。" loading="lazy"></figure>
@@ -124,28 +176,30 @@
           </article>
           <article class="feature-card">
             <figure><img src="../media/auto-hide.png" width="1200" height="750" alt="开启自动隐藏后鼠标离开晾衣架会收起，移到对应屏幕顶部重新展开，提供快中慢三个档位。" loading="lazy"></figure>
-            <div class="feature-body"><span class="feature-category">清爽桌面</span><h3>鼠标移开，桌面恢复清爽。</h3><p>开启「自动隐藏」，离开后收起；想再看，把鼠标移到对应屏幕顶部。</p><p class="feature-detail">快：立即收起 · 中：1 秒 · 慢：2 秒。图片已打开或置顶时仍能自动隐藏。</p></div>
+            <div class="feature-body"><span class="feature-category">清爽桌面</span><h3>鼠标移开，桌面恢复清爽。</h3><p>开启「自动隐藏」，离开后收起；想再看，把鼠标移到对应屏幕顶部。</p><p class="feature-detail">悬停「自动隐藏」约 0.5 秒展开档位。快：立即收起 · 中：1 秒 · 慢：2 秒。</p></div>
           </article>
         </div>
       </section>
 
       <section id="start" class="section start-section" aria-labelledby="start-title">
-        <div class="section-heading"><span class="chapter">04 / 三步开始</span><h2 id="start-title">解压，打开，照常截图。</h2><p>Windows 10 / 11 x64，无需安装 Node.js。</p></div>
+        <div class="section-heading"><span class="chapter">05 / 三步开始</span><h2 id="start-title">解压，打开，照常截图。</h2><p>Windows 10 / 11 x64，无需安装 Node.js。当前下载为 v0.8.8-beta.4 测试版。</p></div>
         <ol class="start-steps">
           <li><span class="step-index">01</span><h3>完整解压</h3><p>下载免安装 ZIP，解压到你的软件目录。程序和旁边的依赖文件一起保留。</p></li>
           <li><span class="step-index">02</span><h3>双击运行</h3><p>打开「截图晾衣架.exe」。已有旧版在运行时，先从托盘退出旧版。</p></li>
           <li><span class="step-index">03</span><h3>截一张新图</h3><p>用 <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> 或微信截图，让新图片进入剪贴板。</p></li>
         </ol>
-        <div class="start-bottom"><span>首次运行会跳过剪贴板已有图片，请新截一张试试。</span><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.7/screenshot-clothesline-0.8.7-win-x64.zip">下载免安装版 <span aria-hidden="true">↓</span></a></div>
+        <div class="start-bottom"><span>首次运行会跳过剪贴板已有图片，请新截一张试试。</span><a class="text-link" href="https://github.com/woxicaocao/screenshot-clothesline/releases/download/v0.8.8-beta.4/screenshot-clothesline-0.8.8-beta.4-win-x64.zip">下载免安装测试版 <span aria-hidden="true">↓</span></a></div>
       </section>
 
       <section class="section support-section" aria-labelledby="support-title">
-        <div class="section-heading"><span class="chapter">05 / 使用小贴士</span><h2 id="support-title">你可能还想知道。</h2></div>
+        <div class="section-heading"><span class="chapter">06 / 使用小贴士</span><h2 id="support-title">你可能还想知道。</h2></div>
         <div class="faq-list">
+          <details><summary>怎样分组，又怎样把多张图片一起拖出来？</summary><div class="faq-content"><p>拖木夹到同类卡片中央停留约 350 毫秒，看到提示后松手成组。点击图片组，在空白处拉框选择多张，再拖选中图片的主体导出原图；拖木夹则批量调整顺序。一次最多拖出 100 张。便签可单独成组，不与图片混放。</p></div></details>
+          <details><summary>「解散组」和「删除整个组」有什么区别？</summary><div class="faq-content"><p>解散组只把成员按顺序放回衣架，内容都保留。删除整个组会先请求确认，再永久删除应用保存的组内图片、便签及对应缓存。导入图片的外部来源文件不会删除。</p></div></details>
           <details><summary>怎样把电脑里的图片挂上去？</summary><div class="faq-content"><p>从文件夹选中 PNG、JPG/JPEG 或 WebP 图片，拖到展开衣架的工具栏、绳子或卡片区域。可以多选，暂停时也能导入。保存的是独立副本，来源文件保留不变。</p></div></details>
           <details open><summary>「暂停」为什么不叫「自动捕捉」？</summary><div class="faq-content"><p>这个按钮显示的是<strong>你下一步能做的操作</strong>：显示「暂停」说明正在自动捕捉；显示「继续」说明已经暂停。截图仍使用你熟悉的 Windows、微信等工具。</p></div></details>
           <details><summary>复制网页图片，为什么按 Ctrl+V 前就挂上了？</summary><div class="faq-content"><p>自动捕捉会收集剪贴板中的新图片，所以复制后可能自动挂上。想手动添加，先点「暂停」，然后悬停衣架按 Ctrl+V 或点击「粘贴」。请选「复制图片」，复制图片地址、文字或文件路径不能直接挂图。</p></div></details>
-          <details><summary>原图和便签保存在哪里？</summary><div class="faq-content"><p>只保存在本机，不上传云端。应用数据目录是 <code>%APPDATA%\screenshot-clothesline</code>，原图在其 <code>photos</code> 子目录，目录中也保存缩略图、便签记录和设置。重启后继续保留。</p><p>在 Windows 资源管理器地址栏输入上面的路径即可打开。关闭预览不删图片；右键「删除」会永久移除对应内容及缓存。</p></div></details>
+          <details><summary>原图、便签和分组保存在哪里？</summary><div class="faq-content"><p>只保存在本机，不上传云端。应用数据目录是 <code>%APPDATA%\screenshot-clothesline</code>，原图在其 <code>photos</code> 子目录，目录中也保存缩略图、便签记录和设置。排序与分组单独保存在 <code>layout.json</code>，不复制原图，重启后继续保留。</p><p>在 Windows 资源管理器地址栏输入上面的路径即可打开。关闭预览不删图片；右键「删除」会永久移除对应内容及缓存。</p></div></details>
           <details><summary>衣架收起来以后，悬浮图片也会关闭吗？</summary><div class="faq-content"><p>不会。衣架、图片预览和便签是独立窗口。开启自动隐藏后，鼠标离开衣架就按选定档位收起，已打开或置顶的图片继续显示。</p></div></details>
           <details><summary>衣架上的小图，会影响原图清晰度吗？</summary><div class="faq-content"><p>衣架只加载小缩略图，减少日常显示的图片解码开销。点击、悬浮和拖出使用保存的原图，不降低原图尺寸。运行内存也会随图片大小和同时打开的窗口数量变化。</p></div></details>
         </div>
@@ -165,7 +219,7 @@ npm run dist</code></pre>
         <details class="appreciation"><summary>赞赏<span>如果它帮到了你，可以请作者喝杯茶。</span><span class="details-plus" aria-hidden="true">+</span></summary><div class="appreciation-content"><img src="../media/appreciation-qr.png" width="280" height="280" alt="作者提供的赞赏收款二维码，请使用相应支付应用扫描，并确认收款信息。" loading="lazy"><p>感谢你的支持。赞赏自愿，所有功能照常使用。</p></div></details>
       </section>
     </main>
-    <footer class="footer"><span>截图晾衣架 · 随手挂，随时看。</span><span>Windows · v0.8.7 · MIT</span></footer>
+    <footer class="footer"><span>截图晾衣架 · 随手挂，随时看。</span><span>Windows · v0.8.8-beta.4 测试版 · MIT</span></footer>
   </div>
   <script>
     (() => {

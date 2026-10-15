@@ -991,7 +991,7 @@ async function run() {
     await waitForRuntime(instance, (value) => value.floating.length === 0 && !value.autoHide.suspended);
     return { deletedId: deleted.id, remaining: photos.length - 1, externalCopy, deletedFiles: ['photos', 'thumbnails', 'exports'], clipboardDidNotRecapture: true };
   });
-  await check('自动隐藏速度仅开启后显示，快中慢分别为立即、1 秒、2 秒', async () => {
+  await check('自动隐藏速度开启后悬停展开，快中慢分别为立即、1 秒、2 秒', async () => {
     const timings = [];
     for (const [speed, delayMs] of [['fast', 0], ['medium', 1000], ['slow', 2000]]) {
       await page.evaluate(() => window.rack.setAutoHide(false));
@@ -1001,6 +1001,7 @@ async function run() {
       const outside = { x: runtime.expandedBounds.x + runtime.expandedBounds.width + 20, y: runtime.expandedBounds.y + 300 };
       await instance.evaluate(({ app }, point) => app.__rackTest.setAutoHideCursor(point), inside);
       await page.evaluate(() => window.rack.setAutoHide(true));
+      await page.locator('#autoHideButton').hover();
       await page.locator('#autoHideSpeedControl').waitFor({ state: 'visible' });
       await page.locator(`#autoHideSpeedControl [data-speed="${speed}"]`).click();
       await waitForSnapshot(instance, (snapshot) => snapshot.state.autoHideSpeed === speed);

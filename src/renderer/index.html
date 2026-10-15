@@ -27,9 +27,9 @@
           </button>
           <button class="tool-button" id="pinButton" type="button" title="将晾衣架固定在所有窗口上方" aria-label="始终置顶" aria-pressed="false" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 3 6 0-1 5 3 3H5l3-3-1-5ZM10 11v6"/></svg><span>置顶</span></button>
           <div class="auto-hide-options">
-            <button class="tool-button" id="autoHideButton" type="button" title="开启自动隐藏：鼠标离开 1 秒后收起到屏幕顶部" aria-label="开启自动隐藏" aria-pressed="false" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 8v8h12V8M7 11l3-3 3 3M10 8v6"/></svg><span>自动隐藏</span></button>
+            <button class="tool-button" id="autoHideButton" type="button" title="开启自动隐藏：鼠标离开 1 秒后收起到屏幕顶部" aria-label="开启自动隐藏" aria-pressed="false" aria-expanded="false" aria-controls="autoHideSpeedControl" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5h12M4 8v8h12V8M7 11l3-3 3 3M10 8v6"/></svg><span>自动隐藏</span></button>
             <div class="auto-hide-speed" id="autoHideSpeedControl" role="group" aria-label="自动隐藏速度" hidden data-interactive>
-              <span class="speed-label">收起速度</span>
+              <span class="speed-label">自动隐藏</span>
               <button type="button" data-speed="fast" data-interactive aria-pressed="false" title="鼠标离开立即隐藏">快<span>立即</span></button>
               <button type="button" data-speed="medium" data-interactive aria-pressed="true" title="鼠标离开 1 秒后隐藏">中<span>1 秒</span></button>
               <button type="button" data-speed="slow" data-interactive aria-pressed="false" title="鼠标离开 2 秒后隐藏">慢<span>2 秒</span></button>
@@ -47,9 +47,10 @@
         <path class="rope-twist" d="M-15 10Q450 45 915 10"/>
       </svg>
 
-      <main class="photo-scroll" id="photoScroll" data-testid="photo-track" aria-label="衣架上的图片和便签，使用滚轮左右翻看">
-        <div class="photo-track" id="photoTrack"></div>
+      <main class="photo-scroll" id="photoScroll" data-testid="photo-track" data-interactive aria-label="衣架上的图片、便签和分组，整条浏览区域都可使用滚轮左右翻看">
+        <div class="photo-track" id="photoTrack"><span class="organize-insertion" id="organizeInsertion" hidden aria-hidden="true"></span></div>
       </main>
+      <div class="organize-hint" id="organizeHint" role="status" aria-live="polite" hidden></div>
       <button class="scroll-button scroll-left" id="scrollLeft" type="button" title="向左翻看" aria-label="向左翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg></button>
       <button class="scroll-button scroll-right" id="scrollRight" type="button" title="向右翻看" aria-label="向右翻看截图" data-interactive><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg></button>
 

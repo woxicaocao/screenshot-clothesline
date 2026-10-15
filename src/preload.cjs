@@ -49,6 +49,10 @@ async function importLocalImages(files) {
 
 contextBridge.exposeInMainWorld('rack', {
   getSnapshot: () => ipcRenderer.invoke('rack:get-snapshot'),
+  applyLayout: operation => ipcRenderer.invoke('rack:apply-layout', operation),
+  setOrganizeActive: active => ipcRenderer.send('rack:organize-active', active === true),
+  openGroup: id => ipcRenderer.invoke('rack:open-group', id),
+  showGroupMenu: id => ipcRenderer.send('rack:group-menu', id),
   pasteClipboard: () => ipcRenderer.invoke('rack:paste-clipboard'),
   importLocalImages,
   setFileDropActive: (active) => ipcRenderer.send('rack:set-file-drop-active', active === true),

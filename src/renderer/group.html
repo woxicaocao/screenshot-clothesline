@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' rack-image:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+    <title>组浏览 · 截图晾衣架</title>
+    <link rel="stylesheet" href="group.css">
+    <script src="group.js" defer></script>
+  </head>
+  <body>
+    <div class="window-titlebar" id="windowTitlebar">
+      <div class="titlebar-content">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 7c6 2 14 2 20 0M7 6v6m10-6v6"/><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="m8 17 3-3 2 2 2-1 2 3"/></svg>
+        <span class="brand-name">截图晾衣架</span><span class="titlebar-separator" aria-hidden="true"></span>
+        <input id="groupName" class="group-name" aria-label="组名，点击即可编辑" maxlength="80" autocomplete="off" disabled>
+        <div class="titlebar-tools"><span id="groupCount" class="group-count"></span><button id="groupPin" class="group-action group-pin" type="button" aria-label="置顶当前组窗口" aria-pressed="false" title="置顶当前组窗口" disabled><svg viewBox="0 0 18 18" aria-hidden="true"><path d="m6 2 6 0-1 4 2 3v1H5V9l2-3-1-4ZM9 10v6"/></svg><span id="groupPinLabel">置顶</span></button><button id="groupMenu" class="group-action group-menu" type="button" aria-label="组管理，重命名、解散或整个删除" aria-haspopup="menu" title="组管理" disabled><span class="action-label">更多</span><svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="4" cy="9" r="1"/><circle cx="9" cy="9" r="1"/><circle cx="14" cy="9" r="1"/></svg></button></div>
+      </div>
+    </div>
+    <header class="group-header">
+      <p class="group-help" id="groupHelp"><span>点击查看原图</span><i aria-hidden="true"></i><span>拖木夹排序</span><i aria-hidden="true"></i><span>拖出原图保存或分享</span></p>
+    </header>
+    <p class="group-error" id="groupError" role="alert" hidden></p>
+    <main class="group-scroll" id="groupScroll" aria-label="组内成员" tabindex="-1">
+      <div class="group-grid" id="groupGrid" role="list"></div>
+      <p class="group-empty" id="groupEmpty">正在读取组内容…</p>
+      <div id="selectionBox" class="selection-box" aria-hidden="true" hidden></div>
+    </main>
+    <footer class="group-footer"><span class="save-status"><span class="status-dot" aria-hidden="true"></span><span id="groupStatus" role="status">整理会自动保存</span></span><div id="groupSelectionTools" class="selection-tools" hidden><span id="selectionCount" role="status" aria-live="polite">已选 0 张</span><button id="clearSelection" type="button" title="取消图片选择（Esc）">取消选择</button></div><span class="footer-tip">右键管理内容<span class="footer-key">Esc</span>关闭</span></footer>
+  </body>
+</html>

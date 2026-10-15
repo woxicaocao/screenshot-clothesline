@@ -15,6 +15,9 @@ const { rackSizeForDisplay } = require('./lib/window-size.cjs');
 const { inspectEncodedImage, mimeForFile } = require('./lib/image-format.cjs');
 const { LocalImageImporter, MAX_LOCAL_FILES } = require('./lib/local-image-import.cjs');
 const { RendererImageDecoder } = require('./lib/renderer-image-decoder.cjs');
+const { LayoutRepository, MAX_BATCH_PHOTOS } = require('./lib/layout-repository.cjs');
+const { GroupWindows } = require('./lib/group-windows.cjs');
+const { deleteGroupMembers } = require('./lib/group-deletion.cjs');
 
 app.setName('screenshot-clothesline');
 // 静态图片挂件使用软件合成，降低常驻GPU资源；特殊显卡可用此开关恢复。
@@ -33,6 +36,8 @@ if (testMode) {
 
 let repository;
 let notesRepository;
+let layoutRepository;
+let groupWindows;
 let noteWindows;
 let photoWindows;
 let testPreviewCursorPoint = null;
@@ -68,6 +73,7 @@ const preparedDrags = new Map();
 const MAX_PREPARED_DRAGS = 2;
 let nativeDragging = false;
 let nativeDraggingId = null;
+const nativeDraggingIds = new Set();
 let lastNativeDrag = null;
 let lastPhotoMenu = null;
 let lastPhotoMenuId = null;
@@ -84,6 +90,47 @@ let localImportPromise = null;
 let fileDropActive = false;
 let fileDropDeadline = 0;
 const FILE_DROP_IDLE_TIMEOUT = 2500;
+const organizeSessions = new Map();
+let lastGroupMenu = null;
+let lastGroupMemberMenu = null;
+let groupDeletePromise = null;
+let testGroupDeleteConfirmation = false;
+let lastGroupDeleteConfirmation = null;
+let lastGroupDeleteResult = null;
+let testBatchDragPreparationGate = null;
+
+function setOrganizeActive(source, active) {
+  if (active && (quitting || preparingExit || nativeDragging)) return;
+  if (active) organizeSessions.set(source, Date.now() + 2500);
+  else organizeSessions.delete(source);
+  suspendRack('organize-items', organizeSessions.size > 0);
+  applyInteractive(requestedInteractive);
+}
+
+function publicCatalog() {
+  return [...repository.getPhotos().map(publicPhoto), ...(notesRepository?.getNoteSummaries() || []).map(publicNote)]
+    .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt) || a.id.localeCompare(b.id));
+}
+
+function findGroup(id) { return layoutRepository?.getGroup(id, publicCatalog()) || null; }
+
+function applyLayout(operation) {
+  if (quitting || preparingExit) return Promise.reject(new Error('程序正在退出，请稍后整理。'));
+  if (!layoutRepository) return Promise.reject(new Error('整理布局暂时无法读取，原有图片和便签已保留。'));
+  const reason = Symbol('layout-save');
+  suspendRack(reason, true);
+  return enqueueStateChange(async () => {
+    try {
+      await layoutRepository.apply(operation, publicCatalog());
+      status = { level: 'info', message: '整理已保存' };
+      publish();
+      return snapshot();
+    } catch (error) {
+      reportActionError(error, error.message || '整理未能保存，原位置已保留，请重试。');
+      throw error;
+    }
+  }).finally(() => suspendRack(reason, false));
+}
 
 function suspendRack(reason, active) {
   if (active) suspensionReasons.add(reason);
@@ -155,7 +202,8 @@ function pasteEligibility() {
   if (!validPoint(point) || point.x < bounds.x || point.x >= bounds.x + bounds.width
     || point.y < bounds.y || point.y >= bounds.y + bounds.height) return false;
   const focused = BrowserWindow.getFocusedWindow();
-  if (focused && !focused.isDestroyed() && focused.isVisible() && noteWindows?.entries.has(focused.id)
+  if (focused && !focused.isDestroyed() && focused.isVisible()
+    && (noteWindows?.entries.has(focused.id) || groupWindows?.entry?.window === focused)
     && (!rackWindow.isAlwaysOnTop() || focused.isAlwaysOnTop())) {
     const editor = focused.getBounds();
     // 便签盖住衣架时，陈旧或转发的悬停消息不能抢走正文的 Ctrl+V。
@@ -239,11 +287,14 @@ function importLocalImages(filePaths) {
 
 function snapshot() {
   const settings = repository.getSettings();
-  const photos = repository.getPhotos().map(publicPhoto);
+  const catalog = publicCatalog();
+  const photos = catalog.filter(item => item.type === 'photo');
+  const layout = layoutRepository?.getView(catalog) || { revision: 0, items: catalog };
   return {
     photos,
-    items: [...photos, ...(notesRepository?.getNoteSummaries() || []).map(publicNote)]
-      .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt) || a.id.localeCompare(b.id)),
+    items: layout.items,
+    layoutRevision: layout.revision,
+    counts: { photos: photos.length, notes: catalog.length - photos.length, groups: layout.items.filter(item => item.type === 'group').length },
     state: { paused: settings.paused, alwaysOnTop: settings.alwaysOnTop, autoHide: settings.autoHide, autoHideSpeed: settings.autoHideSpeed, autoHidden: autoHideState().collapsed, manuallyHidden: autoHideState().manuallyHidden, dragging: !!dragSession, externalDragging: nativeDragging, importing: !!localImportPromise, fileDropActive, pasteShortcutAvailable: !!hoverPasteController?.getState().registered, pasteShortcutBlocked: !!hoverPasteController?.getState().failed },
     status,
     version: app.getVersion()
@@ -252,6 +303,7 @@ function snapshot() {
 
 function publish() {
   if (rackWindow && !rackWindow.isDestroyed()) rackWindow.webContents.send('rack:snapshot', snapshot());
+  groupWindows?.publish();
   updateTrayMenu();
 }
 
@@ -264,7 +316,7 @@ function reportError(error) {
 function applyInteractive(interactive) {
   if (!rackWindow || rackWindow.isDestroyed()) return;
   requestedInteractive = interactive;
-  const nextIgnoring = !(interactive || dragSession || fileDropActive);
+  const nextIgnoring = !(interactive || dragSession || fileDropActive || organizeSessions.has('rack'));
   if (nextIgnoring === ignoringMouseEvents) return;
   ignoringMouseEvents = nextIgnoring;
   rackWindow.setIgnoreMouseEvents(nextIgnoring, { forward: true });
@@ -395,15 +447,35 @@ function preparePhotoDrag(id) {
   return preparedDrags.get(id);
 }
 
+function photoBatchIds(input) {
+  if (!Array.isArray(input) || input.length < 1 || input.length > MAX_BATCH_PHOTOS
+    || input.some(id => typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id))
+    || new Set(input).size !== input.length) throw new Error('请在当前图片组选择 1 至 100 张不同图片。');
+  const ids = [...input];
+  ids.forEach(findPhoto);
+  return ids;
+}
+
+async function preparePhotoBatch(input) {
+  const ids = photoBatchIds(input);
+  // 只生成一个小拖放图标；其余原图按现有仓库接口串行准备导出路径。
+  const first = await preparePhotoDrag(ids[0]);
+  const files = [first.file];
+  for (const id of ids.slice(1)) files.push(await repository.prepareExport(id));
+  ids.forEach(findPhoto);
+  return { file: files[0], files, icon: first.icon };
+}
+
 async function dragPhoto(webContents, id) {
   findPhoto(id);
   if (nativeDragging || quitting) return;
   endDrag();
   nativeDragging = true; nativeDraggingId = id;
-  suspendRack('native-drag', true);
-  applyInteractive(true);
-  publish();
+  nativeDraggingIds.add(id);
   try {
+    suspendRack('native-drag', true);
+    applyInteractive(true);
+    publish();
     const item = await preparePhotoDrag(id);
     findPhoto(id);
     if (quitting || webContents.isDestroyed()) return;
@@ -412,7 +484,43 @@ async function dragPhoto(webContents, id) {
     // https://github.com/electron/electron/blob/v44.7.0/shell/browser/ui/drag_util_views.cc
     if (!testMode) webContents.startDrag(item);
   } finally {
-    nativeDragging = false; nativeDraggingId = null;
+    nativeDragging = false; nativeDraggingId = null; nativeDraggingIds.clear();
+    suspendRack('native-drag', false);
+    autoHideController.reveal();
+    applyInteractive(false);
+    publish();
+  }
+}
+
+async function dragPhotos(webContents, input, validate) {
+  const ids = photoBatchIds(input);
+  if (nativeDragging || quitting || preparingExit) return;
+  if (typeof validate !== 'function') throw new Error('批量拖放缺少当前组校验。');
+  validate();
+  endDrag();
+  nativeDragging = true; nativeDraggingId = ids[0];
+  ids.forEach(id => nativeDraggingIds.add(id));
+  try {
+    suspendRack('native-drag', true);
+    applyInteractive(true);
+    publish();
+    const item = await preparePhotoBatch(ids);
+    const gate = testMode ? testBatchDragPreparationGate : null;
+    if (gate) {
+      gate.entered = true;
+      await gate.promise;
+      if (testBatchDragPreparationGate === gate) testBatchDragPreparationGate = null;
+    }
+    // 准备期间允许切组或移出成员；原生拖放前必须重新验证原来的授权范围。
+    validate();
+    ids.forEach(findPhoto);
+    if (quitting || preparingExit || webContents.isDestroyed()) return;
+    lastNativeDrag = { id: ids[0], ids: [...ids], file: item.file, files: [...item.files],
+      iconSize: item.icon.getSize(), prepared: true, nativeCalled: !testMode };
+    // Electron Item.files 提供全部原图路径；file 按接口要求填写首项。
+    if (!testMode) webContents.startDrag(item);
+  } finally {
+    nativeDragging = false; nativeDraggingId = null; nativeDraggingIds.clear();
     suspendRack('native-drag', false);
     autoHideController.reveal();
     applyInteractive(false);
@@ -437,14 +545,13 @@ function startDeleteCleanup() {
   deleteCleanupTimer.unref();
 }
 
-function deletePhoto(id) {
-  return enqueueStateChange(async () => {
+async function deletePhotoNow(id, { batch = false } = {}) {
     findPhoto(id);
-    if (nativeDragging && nativeDraggingId === id) throw new Error('请先完成图片拖放，再删除它。');
+    if (nativeDragging && nativeDraggingIds.has(id)) throw new Error('请先完成图片拖放，再删除它。');
     const wasPaused = repository.getSettings().paused;
     suspendRack('delete-photo', true);
     collector.forgetPhoto(id);
-    await collector.setPaused(true);
+    if (!batch) await collector.setPaused(true);
     try {
       const result = await repository.deletePhoto(id);
       collector.forgetPhoto(id);
@@ -455,7 +562,7 @@ function deletePhoto(id) {
       if (floating && !floating.isDestroyed()) floating.close();
       // 原图记录已移除，清掉浏览器的临时图像缓存，避免旧响应继续留存。
       // 浏览器缓存清理失败不能覆盖已经提交的删除结果或跳过文件清理重试。
-      try { await rackWindow.webContents.session.clearCache(); }
+      try { if (!batch) await rackWindow.webContents.session.clearCache(); }
       catch (error) { console.error('[浏览器图片缓存清理失败]', error); }
       status = result.cleanupPending
         ? { level: 'error', kind: 'delete-pending', message: '图片已移除，缓存暂时被占用，稍后继续清理。' }
@@ -464,11 +571,14 @@ function deletePhoto(id) {
       publish();
       return result;
     } finally {
-      await collector.setPaused(wasPaused);
+      if (!batch) await collector.setPaused(wasPaused);
       suspendRack('delete-photo', false);
       publish();
     }
-  });
+}
+
+function deletePhoto(id) {
+  return enqueueStateChange(() => deletePhotoNow(id));
 }
 
 async function openFloating(id) {
@@ -530,12 +640,14 @@ function showPhotoMenu(id) {
 
 async function deleteNote(id) {
   if (quitting || preparingExit) throw new Error('程序正在退出，请稍后重试删除便签。');
-  return enqueueStateChange(async () => {
+  return enqueueStateChange(() => deleteNoteNow(id));
+}
+
+async function deleteNoteNow(id) {
     const result = await noteWindows.delete(id);
     status = { level: 'info', message: result.deleted ? '已删除这张便签及保存内容' : '这张便签已经删除' };
     publish();
     return result;
-  });
 }
 
 function showNoteMenu(id) {
@@ -554,6 +666,110 @@ function showNoteMenu(id) {
 
 function validPoint(point) {
   return point && Number.isFinite(point.x) && Number.isFinite(point.y) && Math.abs(point.x) < 1_000_000 && Math.abs(point.y) < 1_000_000;
+}
+
+function popupOrganizeMenu(template, owner, reasonName) {
+  const menu = Menu.buildFromTemplate(template);
+  const reason = Symbol(reasonName);
+  const release = () => suspendRack(reason, false);
+  suspendRack(reason, true);
+  if (testMode) { release(); return menu; }
+  try { menu.popup({ window: owner, callback: release }); }
+  catch (error) { release(); throw error; }
+  return menu;
+}
+
+function deleteEntireGroup(id, owner) {
+  if (quitting || preparingExit) return Promise.reject(new Error('程序正在退出，请稍后重试。'));
+  if (groupDeletePromise) return Promise.reject(new Error('正在确认或删除另一个组，请稍后重试。'));
+  const group = findGroup(id);
+  if (!group) return Promise.reject(new Error('这个组已不存在。'));
+  const members = group.items.map(({ id, type }) => ({ id, type }));
+  const reason = Symbol('delete-entire-group');
+  suspendRack(reason, true);
+  groupDeletePromise = (async () => {
+    const unit = group.kind === 'photo' ? '张图片' : '张便签';
+    const options = {
+      type: 'warning', title: '删除整个组',
+      message: `删除“${group.name}”及其中 ${members.length} ${unit}？`,
+      detail: group.kind === 'photo'
+        ? '将删除这个组，以及组内图片在晾衣架中的原图、缩略图和导出缓存。已打开的对应图片窗口也会关闭。\n\n拖入前的本机源文件不受影响。此操作不可撤销。'
+        : '将删除这个组及组内所有便签的保存内容，已打开的对应便签窗口也会关闭。\n\n此操作不可撤销。',
+      buttons: ['取消', '删除整个组'], defaultId: 0, cancelId: 0, noLink: true
+    };
+    const response = testMode ? (testGroupDeleteConfirmation ? 1 : 0)
+      : (await dialog.showMessageBox(owner && !owner.isDestroyed() ? owner : rackWindow, options)).response;
+    if (testMode) lastGroupDeleteConfirmation = { id, name: group.name, kind: group.kind,
+      count: members.length, response, labels: options.buttons, message: options.message, detail: options.detail };
+    if (response !== 1 || quitting || preparingExit) {
+      const result = { cancelled: true, deletedIds: [], remainingIds: members.map(member => member.id) };
+      lastGroupDeleteResult = result;
+      return result;
+    }
+    return enqueueStateChange(async () => {
+      // 对话框打开时其他窗口仍可能整理内容，成员有变动必须重新确认。
+      const current = findGroup(id);
+      const confirmedIds = new Set(members.map(member => member.id));
+      if (!current || current.kind !== group.kind || current.items.length !== members.length
+        || current.items.some(member => !confirmedIds.has(member.id))) {
+        throw new Error('组内内容已变化，本次没有删除，请重新右键确认。');
+      }
+      if (nativeDragging && [...nativeDraggingIds].some(memberId => confirmedIds.has(memberId))) throw new Error('请先完成组内图片的拖放，再删除整个组。');
+      const wasPaused = repository.getSettings().paused;
+      const hasPhotos = group.kind === 'photo';
+      if (hasPhotos) await collector.setPaused(true);
+      try {
+        // 使用确认后的固定列表；删到最后一项时，组会还原但仍须删除该项。
+        const result = await deleteGroupMembers({ members,
+          deletePhoto: memberId => deletePhotoNow(memberId, { batch: true }), deleteNote: deleteNoteNow });
+        lastGroupDeleteResult = { ...result, groupId: id,
+          error: result.error ? result.error.message : null };
+        if (result.failedId) {
+          status = { level: 'error', message: `已删除 ${result.deletedIds.length} 项，剩余 ${result.remainingIds.length} 项已保留。${result.error?.message || '暂时无法删除。'} 请在衣架中重试。` };
+        } else if (result.cleanupPendingIds.length) {
+          status = { level: 'error', kind: 'delete-pending', message: `已删除整个组及 ${members.length} 项内容，部分图片缓存被占用，稍后继续清理。` };
+        } else {
+          status = { level: 'info', message: `已删除整个组及 ${members.length} ${unit}${hasPhotos ? '和缓存' : ''}` };
+        }
+        return lastGroupDeleteResult;
+      } finally {
+        if (hasPhotos) {
+          try { await rackWindow.webContents.session.clearCache(); }
+          catch (error) { console.error('[浏览器图片缓存清理失败]', error); }
+          await collector.setPaused(wasPaused);
+        }
+        publish();
+      }
+    });
+  })().finally(() => { groupDeletePromise = null; suspendRack(reason, false); });
+  return groupDeletePromise;
+}
+
+function showGroupMenu(id, owner = rackWindow) {
+  if (!findGroup(id)) throw new Error('这个组已不存在。');
+  const menu = popupOrganizeMenu([
+    { label: '重命名', click: () => groupWindows.open(id, { rename: true }).catch(error => reportActionError(error, error.message)) },
+    { label: '解散组', click: () => applyLayout({ type: 'dissolve', groupId: id }).catch(() => {}) },
+    { type: 'separator' },
+    { label: '删除整个组', click: () => deleteEntireGroup(id, owner).catch(error => {
+      reportActionError(error, error.message || '暂时无法删除整个组，请重试。');
+      return { failed: true, error: error.message };
+    }) }
+  ], owner, 'group-menu');
+  lastGroupMenu = { id, menu };
+}
+
+function showGroupMemberMenu(groupId, id, owner) {
+  const member = findGroup(groupId)?.items.find(item => item.id === id);
+  if (!member) throw new Error('这个项目已不在当前组内。');
+  const menu = popupOrganizeMenu([
+    ...(member.type === 'photo' ? [{ label: '悬浮', click: () => openFloating(id).catch(error => reportActionError(error, error.message)) }] : []),
+    { label: '移出此组', click: () => applyLayout({ type: 'remove', groupId, id }).catch(() => {}) },
+    { type: 'separator' },
+    { label: '删除', click: () => (member.type === 'photo' ? deletePhoto(id) : deleteNote(id))
+      .catch(error => reportActionError(error, error.message || '暂时无法删除，请重试。')) }
+  ], owner || rackWindow, 'group-member-menu');
+  lastGroupMemberMenu = { groupId, id, menu };
 }
 
 function beginDrag(point) {
@@ -742,6 +958,27 @@ function registerIPC() {
   const floatingSource = (event) => [...floatingWindows.entries()].find(([, window]) => !window.isDestroyed() && event.sender === window.webContents && event.senderFrame === window.webContents.mainFrame);
   const requireRack = (event) => { if (!fromRack(event)) throw new Error('不允许的窗口请求。'); };
   ipcMain.handle('rack:get-snapshot', (event) => { requireRack(event); return snapshot(); });
+  ipcMain.handle('rack:apply-layout', (event, operation) => { requireRack(event); return applyLayout(operation); });
+  ipcMain.handle('rack:open-group', (event, id) => { requireRack(event); return groupWindows.open(id); });
+  ipcMain.on('rack:organize-active', (event, active) => {
+    if (fromRack(event) && typeof active === 'boolean') setOrganizeActive('rack', active);
+  });
+  ipcMain.on('rack:group-menu', (event, id) => {
+    if (fromRack(event)) { try { showGroupMenu(id); } catch (error) { reportActionError(error, error.message); } }
+  });
+  ipcMain.handle('group:get', event => groupWindows.get(event));
+  ipcMain.handle('group:set-always-on-top', (event, value) => groupWindows.setAlwaysOnTop(event, value));
+  ipcMain.handle('group:apply', (event, operation) => groupWindows.apply(event, operation));
+  ipcMain.handle('group:open-item', (event, id) => groupWindows.openItem(event, id));
+  ipcMain.handle('group:prepare-drag', (event, id) => groupWindows.preparePhotoDrag(event, id));
+  ipcMain.handle('group:prepare-batch-drag', (event, ids) => groupWindows.preparePhotoBatch(event, ids));
+  for (const [channel, method] of [['group:drag-photo', 'dragPhoto'], ['group:drag-photos', 'dragPhotos'], ['group:member-menu', 'memberMenu'], ['group:menu', 'menu'], ['group:organize-active', 'setOrganizeActive']]) {
+    ipcMain.on(channel, (event, value) => {
+      try { Promise.resolve(groupWindows[method](event, value)).catch(error => reportActionError(error, error.message)); }
+      catch (error) { reportActionError(error, error.message); }
+    });
+  }
+  ipcMain.handle('group:close', event => groupWindows.close(event));
   ipcMain.handle('rack:paste-clipboard', event => { requireRack(event); return pasteClipboard(); });
   ipcMain.handle('rack:import-local-images', (event, filePaths) => { requireRack(event); return importLocalImages(filePaths); });
   ipcMain.on('rack:decoded-local-webp', (event, payload) => {
@@ -877,6 +1114,15 @@ async function launch() {
     decodeWebp: (bytes, header) => localWebpDecoder.decode(bytes, header) });
   notesRepository = new NotesRepository(app.getPath('userData'));
   await notesRepository.init();
+  layoutRepository = new LayoutRepository(app.getPath('userData'));
+  try {
+    await layoutRepository.init();
+    layoutRepository.getView(publicCatalog());
+  } catch (error) {
+    console.error('[整理布局读取失败]', error.message);
+    layoutRepository = null;
+    status = { level: 'error', message: '整理布局暂时无法读取，原有图片、便签及布局文件均已保留。' };
+  }
   const systemReadImage = createClipboardReader(clipboard, nativeImage);
   const testReadImage = testMode ? createClipboardReader({
     read: async () => testClipboardBytes ? [{
@@ -929,11 +1175,25 @@ async function launch() {
     },
     onError: error => reportActionError(error, '便签未能保存，内容和窗口已保留，请重试关闭。')
   });
+  groupWindows = new GroupWindows({
+    BrowserWindow, screen, rendererDir: path.join(__dirname, 'renderer'),
+    preload: path.join(__dirname, 'group-preload.cjs'), icon: path.join(__dirname, 'assets', 'app.ico'),
+    getRackBounds: () => expandedBounds, getGroup: findGroup, onApply: applyLayout,
+    onOpenItem: item => item.type === 'photo' ? openPreview(item.id) : noteWindows.open(item.id),
+    onPreparePhotoDrag: async id => { await preparePhotoDrag(id); return true; },
+    onPreparePhotoBatch: async ids => { await preparePhotoBatch(ids); return true; },
+    onDragPhotos: (contents, ids, validate) => dragPhotos(contents, ids, validate),
+    onDragPhoto: (contents, id) => dragPhoto(contents, id), onMemberMenu: showGroupMemberMenu,
+    onGroupMenu: showGroupMenu,
+    onOrganizeActive: active => setOrganizeActive('group', active),
+    onError: error => reportActionError(error, error.message || '组窗口暂时无法操作，请重试。'),
+    canOpen: () => !quitting && !preparingExit
+  });
   secureWindow(rackWindow);
   rackWindow.on('move', queuePositionSave);
   rackWindow.on('resize', queuePositionSave);
-  rackWindow.on('hide', () => { setFileDropActive(false); pasteHover = false; updateHoverPaste(); });
-  rackWindow.on('blur', () => { pasteHover = false; updateHoverPaste(); });
+  rackWindow.on('hide', () => { setFileDropActive(false); setOrganizeActive('rack', false); pasteHover = false; updateHoverPaste(); });
+  rackWindow.on('blur', () => { setOrganizeActive('rack', false); pasteHover = false; updateHoverPaste(); });
   rackWindow.on('close', (event) => { if (!quitting) { event.preventDefault(); hideRack(); } });
   rackWindow.once('ready-to-show', () => {
     applyInteractive(false); rackWindow.showInactive();
@@ -941,6 +1201,7 @@ async function launch() {
       if (quitting || rackWindow.isDestroyed()) return;
       // 与已有轻量轮询复用；拖放中取消、失焦或漏发 dragleave 时自动恢复。
       if (fileDropActive && Date.now() >= fileDropDeadline) setFileDropActive(false);
+      for (const [source, deadline] of organizeSessions) if (Date.now() >= deadline) setOrganizeActive(source, false);
       autoHideController.tick(testCursorPoint || screen.getCursorScreenPoint());
       updateHoverPaste();
     }, 50);
@@ -966,6 +1227,61 @@ async function launch() {
       snapshot,
       notes: () => notesRepository.getNotes(),
       noteRuntime: () => noteWindows.runtime(),
+      groupRuntime: () => groupWindows.runtime(),
+      failNextLayoutSave: () => {
+        if (!layoutRepository) throw new Error('布局仓库不可用');
+        const write = layoutRepository._atomicWrite.bind(layoutRepository);
+        layoutRepository._atomicWrite = value => { layoutRepository._atomicWrite = write; return Promise.reject(new Error('测试：布局保存失败')); };
+      },
+      organizeRuntime: () => ({ sources: [...organizeSessions.keys()], autoHide: autoHideState(), ignoringMouseEvents }),
+      groupMenu: () => lastGroupMenu ? { id: lastGroupMenu.id, labels: lastGroupMenu.menu.items.map(item => item.label) } : null,
+      groupMemberMenu: () => lastGroupMemberMenu ? { groupId: lastGroupMemberMenu.groupId, id: lastGroupMemberMenu.id,
+        labels: lastGroupMemberMenu.menu.items.map(item => item.label) } : null,
+      chooseGroupMemberMenu: label => {
+        const item = lastGroupMemberMenu?.menu.items.find(entry => entry.label === label);
+        if (!item) throw new Error('测试组成员菜单项不存在');
+        return item.click(item);
+      },
+      chooseGroupMenu: label => {
+        const item = lastGroupMenu?.menu.items.find(entry => entry.label === label);
+        if (!item) throw new Error('测试组菜单项不存在');
+        const value = item.click(item, rackWindow);
+        // Electron 原生 MenuItem.click 会丢弃 async 回调返回值，测试仍需等待实际删除结束。
+        return label === '删除整个组' && groupDeletePromise
+          ? groupDeletePromise.catch(error => ({ failed: true, error: error.message })) : value;
+      },
+      setGroupDeleteConfirmation: value => {
+        if (typeof value !== 'boolean') throw new TypeError('测试删除确认必须是布尔值');
+        testGroupDeleteConfirmation = value;
+      },
+      lastGroupDeleteConfirmation: () => lastGroupDeleteConfirmation,
+      lastGroupDeleteResult: () => lastGroupDeleteResult,
+      holdNextBatchDragPreparation: () => {
+        if (testBatchDragPreparationGate) throw new Error('测试批量准备仍在等待');
+        const gate = { entered: false };
+        gate.promise = new Promise(resolve => { gate.resolve = resolve; });
+        testBatchDragPreparationGate = gate;
+        return true;
+      },
+      releaseBatchDragPreparation: () => {
+        if (!testBatchDragPreparationGate) return false;
+        testBatchDragPreparationGate.resolve();
+        if (!testBatchDragPreparationGate.entered) testBatchDragPreparationGate = null;
+        return true;
+      },
+      batchDragPreparationPending: () => !!testBatchDragPreparationGate?.entered,
+      failNextPhotoDelete: (afterSuccesses = 0) => {
+        if (!Number.isSafeInteger(afterSuccesses) || afterSuccesses < 0) throw new TypeError('测试失败次数无效');
+        const remove = repository.deletePhoto.bind(repository);
+        let successful = 0;
+        repository.deletePhoto = async id => {
+          if (successful === afterSuccesses) {
+            repository.deletePhoto = remove;
+            throw new Error('测试：图片删除失败');
+          }
+          const result = await remove(id); successful += 1; return result;
+        };
+      },
       failNextNoteSave: () => {
         const save = notesRepository.saveNote.bind(notesRepository);
         notesRepository.saveNote = payload => { notesRepository.saveNote = save; return Promise.reject(new Error('测试：便签保存失败')); };
@@ -1055,6 +1371,7 @@ if (!app.requestSingleInstanceLock()) {
         return;
       }
       quitting = true;
+      organizeSessions.clear();
       setFileDropActive(false);
       clearTimeout(moveTimer);
       clearInterval(autoHideTimer);

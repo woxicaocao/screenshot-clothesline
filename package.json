@@ -1,6 +1,6 @@
 {
   "name": "screenshot-clothesline",
-  "version": "0.8.7",
+  "version": "0.8.8-beta.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,6 +20,10 @@
     "smoke:notes": "node scripts/notes-smoke.cjs",
     "smoke:appreciation": "node scripts/appreciation-smoke.cjs",
     "smoke:local-images": "node scripts/local-image-drop-smoke.cjs",
+    "smoke:organize": "node scripts/organize-smoke.cjs",
+    "smoke:group-refresh": "node scripts/group-refresh-smoke.cjs",
+    "smoke:compact-hover": "node scripts/compact-hover-smoke.cjs",
+    "smoke:batch-group": "node scripts/batch-group-smoke.cjs",
     "dist": "electron-builder --win zip --x64",
     "memory": "node scripts/memory-benchmark.cjs"
   },
@@ -33,7 +37,7 @@
     "productName": "截图晾衣架",
     "electronDist": "node_modules/electron/dist",
     "directories": {
-      "output": "release/v0.8.7"
+      "output": "release/v0.8.8-beta.4"
     },
     "files": [
       "src/**/*",
@@ -41,8 +45,12 @@
     ],
     "extraFiles": [
       {
-        "from": "docs/使用手册.md",
+        "from": "docs/release-v0.8.8-beta.4.md",
         "to": "使用说明.md"
+      },
+      {
+        "from": "docs/使用手册.md",
+        "to": "完整功能手册.md"
       },
       {
         "from": "LICENSE",

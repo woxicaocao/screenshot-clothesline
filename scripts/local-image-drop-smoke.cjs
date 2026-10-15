@@ -9,7 +9,7 @@ const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const mode = process.env.RACK_EXE ? 'packaged' : 'development';
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
-const artifacts = path.join(root, 'test-artifacts', 'v0.8.7', `local-image-drop-${mode}`, runId);
+const artifacts = path.join(root, 'test-artifacts', `v${require('../package.json').version}`, `local-image-drop-${mode}`, runId);
 const profile = path.join(artifacts, 'profile');
 const sources = path.join(artifacts, '本机图片 fixtures');
 const report = {
@@ -231,7 +231,8 @@ async function run() {
     const points = await rack.locator('.rope-base').evaluate(rope => {
       const local = rope.getPointAtLength(rope.getTotalLength() * .2);
       const point = new DOMPoint(local.x, local.y).matrixTransform(rope.getScreenCTM());
-      const blank = { x: point.x, y: point.y - 10 };
+      // 浏览带内的空白现在需要接收滚轮；穿透检查应在浏览带之外。
+      const blank = { x: 2, y: Math.min(innerHeight - 2, 258) };
       const hit = (x, y) => {
         const element = document.elementFromPoint(x, y);
         return { interactive: !!element?.closest('[data-interactive]'), tag: element?.tagName, className: element?.getAttribute('class') };

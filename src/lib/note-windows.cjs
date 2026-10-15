@@ -1,6 +1,7 @@
 'use strict';
 const path = require('node:path');
 const { normalizeNoteInput, DEFAULT_NOTE } = require('./notes-repository.cjs');
+const { placeAvoidingRack, fitSavedBounds } = require('./avoid-rack.cjs');
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const validPoint = point => point && Number.isFinite(point.x) && Number.isFinite(point.y)
@@ -26,13 +27,18 @@ class NoteWindows {
 
   _position(saved) {
     const rack = this.getRackBounds();
-    const position = saved || { x: rack.x + 60 + this.entries.size * 24, y: rack.y + 90 + this.entries.size * 20 };
+    const position = saved || { x: rack.x + rack.width / 2, y: rack.y + rack.height / 2 };
     const display = this.screen.getDisplayNearestPoint({ x: Math.round(position.x), y: Math.round(position.y) });
     const area = display.workArea;
-    const width = Math.max(1, Math.min(saved?.width || 380, area.width - 24));
-    const height = Math.max(1, Math.min(saved?.height || 430, area.height - 24));
-    return { x: Math.round(Math.max(area.x, Math.min(position.x, area.x + area.width - width))),
-      y: Math.round(Math.max(area.y, Math.min(position.y, area.y + area.height - height))), width: Math.round(width), height: Math.round(height) };
+    if (saved) return fitSavedBounds(saved, area);
+    const occupied = [...this.entries.values()].filter(entry => !entry.window.isDestroyed()).map(entry => entry.window.getBounds());
+    let first;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const bounds = placeAvoidingRack({ rack, workArea: area, width: 380, height: 430, cascade: this.entries.size + attempt });
+      first ||= bounds;
+      if (!occupied.some(other => other.x === bounds.x && other.y === bounds.y)) return bounds;
+    }
+    return first;
   }
 
   async open(id = null) {
